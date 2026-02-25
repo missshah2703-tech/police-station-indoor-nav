@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" font-family="Arial, sans-serif">
+  <!-- Background -->
+  <rect width="800" height="600" fill="#f8f6f0" rx="4"/>
+
+  <!-- Building outline -->
+  <rect x="15" y="15" width="770" height="570" fill="#fff" stroke="#2c3e50" stroke-width="3" rx="3"/>
+
+  <!-- ═══════ CORRIDORS (light gray) ═══════ -->
+  <!-- Main horizontal corridor -->
+  <rect x="15" y="250" width="770" height="100" fill="#ecf0f1" stroke="#ddd" stroke-width="0.5"/>
+  <!-- Left vertical corridor (north) -->
+  <rect x="300" y="15" width="100" height="235" fill="#ecf0f1" stroke="#ddd" stroke-width="0.5"/>
+  <!-- Left vertical corridor (south) -->
+  <rect x="300" y="350" width="100" height="235" fill="#ecf0f1" stroke="#ddd" stroke-width="0.5"/>
+  <!-- Right vertical corridor (north) -->
+  <rect x="550" y="15" width="100" height="235" fill="#ecf0f1" stroke="#ddd" stroke-width="0.5"/>
+  <!-- Right vertical corridor (south) -->
+  <rect x="550" y="350" width="100" height="235" fill="#ecf0f1" stroke="#ddd" stroke-width="0.5"/>
+
+  <!-- Mezzanine connector (diagonal path area) -->
+  <rect x="400" y="200" width="150" height="50" fill="#e8e5de" stroke="#ccc" stroke-width="0.5" rx="3"/>
+
+  <!-- ═══════ ROOMS ═══════ -->
+
+  <!-- Reception (green) -->
+  <rect x="25" y="258" width="130" height="84" fill="#e8f5e9" stroke="#4caf50" stroke-width="2.5" rx="4"/>
+  <text x="90" y="288" text-anchor="middle" font-size="11" font-weight="bold" fill="#2e7d32">Reception</text>
+  <text x="90" y="304" text-anchor="middle" font-size="9" fill="#388e3c">الاستقبال</text>
+  <text x="90" y="320" text-anchor="middle" font-size="9" fill="#66bb6a">रिसेप्शन</text>
+  <text x="90" y="336" text-anchor="middle" font-size="16">🏢</text>
+
+  <!-- Traffic Department (blue) -->
+  <rect x="200" y="25" width="200" height="160" fill="#e3f2fd" stroke="#1976d2" stroke-width="2.5" rx="4"/>
+  <text x="300" y="80" text-anchor="middle" font-size="11" font-weight="bold" fill="#1565c0">Traffic Department</text>
+  <text x="300" y="98" text-anchor="middle" font-size="9" fill="#1976d2">قسم المرور</text>
+  <text x="300" y="114" text-anchor="middle" font-size="9" fill="#42a5f5">यातायात विभाग</text>
+  <text x="300" y="148" text-anchor="middle" font-size="28">🚗</text>
+
+  <!-- Criminal Investigation (red) -->
+  <rect x="200" y="415" width="200" height="160" fill="#ffebee" stroke="#d32f2f" stroke-width="2.5" rx="4"/>
+  <text x="300" y="472" text-anchor="middle" font-size="11" font-weight="bold" fill="#c62828">Criminal Investigation</text>
+  <text x="300" y="490" text-anchor="middle" font-size="9" fill="#d32f2f">التحقيقات الجنائية</text>
+  <text x="300" y="506" text-anchor="middle" font-size="9" fill="#ef5350">आपराधिक जांच</text>
+  <text x="300" y="542" text-anchor="middle" font-size="28">🔍</text>
+
+  <!-- Community Policing (amber) -->
+  <rect x="450" y="25" width="200" height="160" fill="#fff8e1" stroke="#f9a825" stroke-width="2.5" rx="4"/>
+  <text x="550" y="80" text-anchor="middle" font-size="11" font-weight="bold" fill="#f57f17">Community Policing</text>
+  <text x="550" y="98" text-anchor="middle" font-size="9" fill="#f9a825">الشرطة المجتمعية</text>
+  <text x="550" y="114" text-anchor="middle" font-size="9" fill="#ffca28">सामुदायिक पुलिसिंग</text>
+  <text x="550" y="148" text-anchor="middle" font-size="28">🤝</text>
+
+  <!-- Restrooms (purple) -->
+  <rect x="450" y="415" width="200" height="160" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2.5" rx="4"/>
+  <text x="550" y="472" text-anchor="middle" font-size="11" font-weight="bold" fill="#6a1b9a">Restrooms</text>
+  <text x="550" y="490" text-anchor="middle" font-size="9" fill="#7b1fa2">دورات المياه</text>
+  <text x="550" y="506" text-anchor="middle" font-size="9" fill="#ab47bc">शौचालय</text>
+  <text x="550" y="542" text-anchor="middle" font-size="28">🚻</text>
+  <!-- Wheelchair accessible badge -->
+  <circle cx="630" cy="435" r="12" fill="#7b1fa2"/>
+  <text x="630" y="439" text-anchor="middle" font-size="12" fill="white">♿</text>
+
+  <!-- Emergency Exit (orange) -->
+  <rect x="700" y="262" width="75" height="76" fill="#fff3e0" stroke="#e64a19" stroke-width="2.5" rx="4"/>
+  <text x="737" y="292" text-anchor="middle" font-size="10" font-weight="bold" fill="#bf360c">EXIT</text>
+  <text x="737" y="306" text-anchor="middle" font-size="8" fill="#e64a19">مخرج الطوارئ</text>
+  <text x="737" y="326" text-anchor="middle" font-size="18">🚪</text>
+
+  <!-- Mezzanine / Stairs -->
+  <rect x="440" y="195" width="70" height="55" fill="#efebe9" stroke="#795548" stroke-width="2" rx="4"/>
+  <text x="475" y="215" text-anchor="middle" font-size="8" font-weight="bold" fill="#4e342e">Stairs</text>
+  <text x="475" y="228" text-anchor="middle" font-size="7" fill="#795548">سلالم</text>
+  <text x="475" y="244" text-anchor="middle" font-size="14">🪜</text>
+  <!-- Warning: stairs -->
+  <circle cx="510" cy="203" r="8" fill="#ff9800"/>
+  <text x="510" y="207" text-anchor="middle" font-size="10" fill="white">⚠</text>
+
+  <!-- ═══════ DECORATIONS ═══════ -->
+
+  <!-- Entrance arrow -->
+  <polygon points="4,300 22,284 22,316" fill="#4caf50" opacity="0.9"/>
+  <rect x="0" y="280" width="4" height="40" fill="#4caf50"/>
+  <text x="6" y="270" font-size="8" fill="#2e7d32" font-weight="bold">ENTRANCE</text>
+  <text x="6" y="340" font-size="7" fill="#2e7d32">مدخل</text>
+
+  <!-- Corridor labels -->
+  <text x="400" y="296" text-anchor="middle" font-size="8" fill="#999" font-style="italic">Main Corridor — الممر الرئيسي</text>
+
+  <!-- Floor label -->
+  <text x="400" y="590" text-anchor="middle" font-size="9" fill="#bbb">Ground Floor — الطابق الأرضي — भूतल</text>
+
+  <!-- North arrow -->
+  <g transform="translate(760, 40)">
+    <circle r="15" fill="white" stroke="#ccc" stroke-width="1"/>
+    <polygon points="0,-12 -5,-2 5,-2" fill="#d32f2f"/>
+    <polygon points="0,12 -5,2 5,2" fill="#ccc"/>
+    <text y="4" text-anchor="middle" font-size="7" font-weight="bold" fill="#333">N</text>
+  </g>
+
+  <!-- Scale bar -->
+  <g transform="translate(660, 570)">
+    <line x1="0" y1="0" x2="80" y2="0" stroke="#999" stroke-width="1.5"/>
+    <line x1="0" y1="-4" x2="0" y2="4" stroke="#999" stroke-width="1.5"/>
+    <line x1="80" y1="-4" x2="80" y2="4" stroke="#999" stroke-width="1.5"/>
+    <text x="40" y="-6" text-anchor="middle" font-size="7" fill="#999">~8m</text>
+  </g>
+</svg>
