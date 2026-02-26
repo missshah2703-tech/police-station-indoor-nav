@@ -185,15 +185,19 @@ export default function SplitNavigationView({
       return;
     }
 
-    const calibration = loadCalibration("142184"); // Load saved calibration
+    const mapId = floor.immersalMapId || "142184"; // Use floor's map ID or fallback
+    const calibration = loadCalibration(mapId);
     const mapping = calibration
       ? { scaleX: calibration.scaleX, scaleY: calibration.scaleY, offsetX: calibration.offsetX, offsetY: calibration.offsetY, axisMapping: calibration.axisMapping }
       : { offsetX: floor.width / 2, offsetY: floor.height / 2 };
 
+    let mounted = true;
+
     const doVPS = async () => {
-      if (!videoRef.current) return;
+      if (!videoRef.current || !mounted) return;
       try {
         const result = await localizeVPS(videoRef.current, mapping);
+        if (!mounted) return; // Component unmounted during await
         if (result.success && result.accuracy <= 2.5) {
           applyBeaconFix({ x: result.x, y: result.y }, result.accuracy);
           if (result.rotation) {
@@ -208,6 +212,7 @@ export default function SplitNavigationView({
     vpsIntervalRef.current = setInterval(doVPS, 3000);
 
     return () => {
+      mounted = false;
       if (vpsIntervalRef.current) {
         clearInterval(vpsIntervalRef.current);
         vpsIntervalRef.current = null;

@@ -101,11 +101,19 @@ export function loadCalibration(mapId: string): VPSMappingConfig | null {
  * Each pair: { immersal: {px, py, pz}, floorPlan: {x, y} }
  * Returns the best-fit VPSMappingConfig.
  */
+export interface CalibrationResult {
+  config: VPSMappingConfig;
+  /** Mean residual error in floor plan pixels — lower is better */
+  meanError: number;
+  /** Per-point errors in floor plan pixels */
+  pointErrors: number[];
+}
+
 export function calculateCalibration(
   points: Array<{ immersal: { px: number; py: number; pz: number }; floorPlan: { x: number; y: number } }>,
   axisMapping: "xz" | "xy" | "yz" = "xz"
-): VPSMappingConfig | null {
-  if (points.length < 2) return null;
+): CalibrationResult | null {
+  if (points.length < 4) return null; // Min 4 points for reliable calibration
 
   // Extract the Immersal axis pair based on mapping
   const getAxes = (p: { px: number; py: number; pz: number }) => {
@@ -140,7 +148,25 @@ export function calculateCalibration(
   const scaleY = (n * sumBFy - sumB * sumFy) / denomY;
   const offsetY = (sumFy - scaleY * sumB) / n;
 
-  return { scaleX, scaleY, offsetX, offsetY, axisMapping };
+  const config: VPSMappingConfig = { scaleX, scaleY, offsetX, offsetY, axisMapping };
+
+  // Calculate residual errors per point
+  const getAxesFn = (p: { px: number; py: number; pz: number }) => {
+    switch (axisMapping) {
+      case "xz": return { a: p.px, b: p.pz };
+      case "xy": return { a: p.px, b: p.py };
+      case "yz": return { a: p.py, b: p.pz };
+    }
+  };
+  const pointErrors = points.map((pt) => {
+    const { a, b } = getAxesFn(pt.immersal);
+    const predX = a * scaleX + offsetX;
+    const predY = b * scaleY + offsetY;
+    return Math.sqrt((predX - pt.floorPlan.x) ** 2 + (predY - pt.floorPlan.y) ** 2);
+  });
+  const meanError = pointErrors.reduce((s, e) => s + e, 0) / pointErrors.length;
+
+  return { config, meanError, pointErrors };
 }
 
 /**

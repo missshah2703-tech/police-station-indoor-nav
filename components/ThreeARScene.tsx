@@ -83,6 +83,10 @@ export default function ThreeARScene({
   const turnSignRef = useRef<THREE.Group | null>(null);
   const hudGroupRef = useRef<THREE.Group | null>(null);
 
+  // Store VPS rotation in a ref so the animation loop reads it without restarting
+  const vpsRotationRef = useRef<VPSRotationMatrix | null>(null);
+  useEffect(() => { vpsRotationRef.current = vpsRotation; }, [vpsRotation]);
+
   // ── Convert floor plan point to 3D world coordinates ──
   const toWorld = useCallback(
     (pt: RoutePoint): THREE.Vector3 => {
@@ -656,18 +660,22 @@ export default function ThreeARScene({
       // Camera is always at origin (path is relative to user)
       camera.position.set(0, EYE_HEIGHT, 0);
 
-      if (vpsRotation) {
-        // Use Immersal VPS rotation matrix for precise camera orientation
-        // Immersal returns a 3x3 rotation matrix; build a Three.js Matrix4
+      // Read VPS rotation from ref (avoids restarting animation loop on every VPS update)
+      const rot = vpsRotationRef.current;
+      if (rot) {
+        // Use Immersal VPS rotation matrix for precise camera orientation.
+        // Immersal uses CV camera convention: X-right, Y-DOWN, Z-forward.
+        // Three.js uses: X-right, Y-UP, Z-backward.
+        // Convert by negating Y row (flip up/down) and Z row (flip forward/back).
         const m = new THREE.Matrix4();
         m.set(
-          vpsRotation.r00, vpsRotation.r01, vpsRotation.r02, 0,
-          vpsRotation.r10, vpsRotation.r11, vpsRotation.r12, 0,
-          vpsRotation.r20, vpsRotation.r21, vpsRotation.r22, 0,
-          0, 0, 0, 1
+          rot.r00,  rot.r01,  rot.r02, 0,
+         -rot.r10, -rot.r11, -rot.r12, 0,
+         -rot.r20, -rot.r21, -rot.r22, 0,
+          0,        0,        0,       1
         );
 
-        // Extract quaternion from the rotation matrix and apply to camera
+        // Extract quaternion from the converted rotation matrix
         const q = new THREE.Quaternion();
         q.setFromRotationMatrix(m);
         camera.quaternion.copy(q);
@@ -763,7 +771,7 @@ export default function ThreeARScene({
     return () => {
       if (animRef.current) cancelAnimationFrame(animRef.current);
     };
-  }, [visible, heading, routeHeading, vpsRotation]);
+  }, [visible, heading, routeHeading]);
 
   // ── Update HUD (2D overlay elements rendered via Three.js Sprites) ──
   // The HUD (destination label, distance bar, warnings) stays in the

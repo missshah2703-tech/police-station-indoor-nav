@@ -79,21 +79,23 @@ export default function CalibratePage() {
   }, [lastRaw, floorX, floorY, points.length]);
 
   const runCalibration = useCallback(() => {
-    if (points.length < 2) {
-      setStatus("Need at least 2 calibration points.");
+    if (points.length < 4) {
+      setStatus("Need at least 4 calibration points for reliable results.");
       return;
     }
 
-    const config = calculateCalibration(points, axisMapping);
-    if (!config) {
-      setStatus("Calibration failed — points may be too close together.");
+    const result = calculateCalibration(points, axisMapping);
+    if (!result) {
+      setStatus("Calibration failed \u2014 points may be too close together.");
       return;
     }
 
-    saveCalibration(MAP_ID, config);
-    setSavedConfig(config);
+    saveCalibration(MAP_ID, result.config);
+    setSavedConfig(result.config);
     setStatus(
-      `Calibration saved! scaleX=${config.scaleX.toFixed(2)}, scaleY=${config.scaleY.toFixed(2)}, offsetX=${config.offsetX.toFixed(1)}, offsetY=${config.offsetY.toFixed(1)}`
+      `Calibration saved! scaleX=${result.config.scaleX.toFixed(2)}, scaleY=${result.config.scaleY.toFixed(2)}, ` +
+      `offsetX=${result.config.offsetX.toFixed(1)}, offsetY=${result.config.offsetY.toFixed(1)}\n` +
+      `Mean error: ${result.meanError.toFixed(1)}px | Per-point: [${result.pointErrors.map(e => e.toFixed(1)).join(", ")}]px`
     );
   }, [points, axisMapping]);
 
@@ -224,7 +226,7 @@ export default function CalibratePage() {
             disabled={points.length < 2}
             className="flex-1 bg-green-600 text-white px-4 py-3 rounded-xl font-bold disabled:opacity-40"
           >
-            Calculate & Save ({points.length}/2+ points)
+            Calculate & Save ({points.length}/4+ points)
           </button>
           <button
             onClick={resetCalibration}

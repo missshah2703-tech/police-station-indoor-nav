@@ -48,6 +48,8 @@ export interface Floor {
   pois: POI[];
   /** Coordinate units per real-world meter. Default 10 (1 unit = 0.1m). */
   scaleFactor?: number;
+  /** Immersal VPS map ID for this floor (for calibration lookup) */
+  immersalMapId?: string;
 }
 
 /** A building containing one or more floors */
