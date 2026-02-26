@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useCallback } from "react";
 import * as THREE from "three";
+import type { VPSRotationMatrix } from "@/lib/vps";
 
 /* ═══════════════════════════════════════════════════════════════
    ThreeARScene — Production-grade 3D AR Navigation Renderer
@@ -25,6 +26,8 @@ interface ThreeARSceneProps {
   metersPerPx: number;
   heading: number | null;          // compass heading in degrees
   routeHeading: number | null;     // route direction heading
+  /** VPS rotation matrix — when available, overrides compass for camera orientation */
+  vpsRotation: VPSRotationMatrix | null;
   destinationName: string;
   visible: boolean;
   distanceWalked: number;
@@ -55,6 +58,7 @@ export default function ThreeARScene({
   metersPerPx,
   heading,
   routeHeading,
+  vpsRotation,
   destinationName,
   visible,
   distanceWalked,
@@ -648,11 +652,26 @@ export default function ThreeARScene({
 
       const elapsed = clockRef.current.getElapsedTime();
 
-      // ── Camera orientation from compass ──
+      // ── Camera orientation from VPS rotation matrix or compass ──
       // Camera is always at origin (path is relative to user)
       camera.position.set(0, EYE_HEIGHT, 0);
 
-      if (heading !== null && routeHeading !== null) {
+      if (vpsRotation) {
+        // Use Immersal VPS rotation matrix for precise camera orientation
+        // Immersal returns a 3x3 rotation matrix; build a Three.js Matrix4
+        const m = new THREE.Matrix4();
+        m.set(
+          vpsRotation.r00, vpsRotation.r01, vpsRotation.r02, 0,
+          vpsRotation.r10, vpsRotation.r11, vpsRotation.r12, 0,
+          vpsRotation.r20, vpsRotation.r21, vpsRotation.r22, 0,
+          0, 0, 0, 1
+        );
+
+        // Extract quaternion from the rotation matrix and apply to camera
+        const q = new THREE.Quaternion();
+        q.setFromRotationMatrix(m);
+        camera.quaternion.copy(q);
+      } else if (heading !== null && routeHeading !== null) {
         // Calculate the difference between compass heading and route heading
         // Route heading = direction the path goes
         // Compass heading = direction user is actually facing
@@ -744,7 +763,7 @@ export default function ThreeARScene({
     return () => {
       if (animRef.current) cancelAnimationFrame(animRef.current);
     };
-  }, [visible, heading, routeHeading]);
+  }, [visible, heading, routeHeading, vpsRotation]);
 
   // ── Update HUD (2D overlay elements rendered via Three.js Sprites) ──
   // The HUD (destination label, distance bar, warnings) stays in the

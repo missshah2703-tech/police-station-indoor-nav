@@ -8,6 +8,13 @@
  * uses a simple affine transform that must be calibrated once per building.
  */
 
+/** 3x3 rotation matrix from Immersal (row-major) */
+export interface VPSRotationMatrix {
+  r00: number; r01: number; r02: number;
+  r10: number; r11: number; r12: number;
+  r20: number; r21: number; r22: number;
+}
+
 export interface VPSResult {
   success: boolean;
   /** Position on the floor plan (in floor coordinates) */
@@ -17,6 +24,8 @@ export interface VPSResult {
   accuracy: number;
   /** Raw Immersal position */
   raw?: { px: number; py: number; pz: number };
+  /** Rotation matrix from Immersal VPS — use for camera orientation */
+  rotation?: VPSRotationMatrix;
 }
 
 interface ImmersalResponse {
@@ -46,7 +55,7 @@ interface ImmersalResponse {
  * Default values assume a rough 1:10 mapping (Immersal meters → floor plan units)
  * which matches the scaleFactor=10 used in the floor data.
  */
-interface VPSMappingConfig {
+export interface VPSMappingConfig {
   /** Scale factor: floor plan units per Immersal meter (default: 10, matching scaleFactor) */
   scaleX: number;
   scaleY: number;
@@ -58,13 +67,81 @@ interface VPSMappingConfig {
   axisMapping: "xz" | "xy" | "yz";
 }
 
-const DEFAULT_MAPPING: VPSMappingConfig = {
+export const DEFAULT_MAPPING: VPSMappingConfig = {
   scaleX: 10,
   scaleY: 10,
   offsetX: 400, // center of an 800-wide floor plan
   offsetY: 300, // center of a 600-high floor plan
   axisMapping: "xz",
 };
+
+const CALIBRATION_KEY = "vps_calibration";
+
+/** Save calibration mapping to localStorage (per building/map) */
+export function saveCalibration(mapId: string, config: VPSMappingConfig): void {
+  try {
+    const all = JSON.parse(localStorage.getItem(CALIBRATION_KEY) || "{}");
+    all[mapId] = config;
+    localStorage.setItem(CALIBRATION_KEY, JSON.stringify(all));
+  } catch { /* localStorage unavailable */ }
+}
+
+/** Load calibration mapping from localStorage; returns null if not calibrated */
+export function loadCalibration(mapId: string): VPSMappingConfig | null {
+  try {
+    const all = JSON.parse(localStorage.getItem(CALIBRATION_KEY) || "{}");
+    return all[mapId] || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Calculate calibration from 2+ known point pairs.
+ * Each pair: { immersal: {px, py, pz}, floorPlan: {x, y} }
+ * Returns the best-fit VPSMappingConfig.
+ */
+export function calculateCalibration(
+  points: Array<{ immersal: { px: number; py: number; pz: number }; floorPlan: { x: number; y: number } }>,
+  axisMapping: "xz" | "xy" | "yz" = "xz"
+): VPSMappingConfig | null {
+  if (points.length < 2) return null;
+
+  // Extract the Immersal axis pair based on mapping
+  const getAxes = (p: { px: number; py: number; pz: number }) => {
+    switch (axisMapping) {
+      case "xz": return { a: p.px, b: p.pz };
+      case "xy": return { a: p.px, b: p.py };
+      case "yz": return { a: p.py, b: p.pz };
+    }
+  };
+
+  // Least-squares fit: floorX = scaleX * immA + offsetX
+  //                    floorY = scaleY * immB + offsetY
+  let sumA = 0, sumB = 0, sumFx = 0, sumFy = 0;
+  let sumAA = 0, sumBB = 0, sumAFx = 0, sumBFy = 0;
+  const n = points.length;
+
+  for (const pt of points) {
+    const { a, b } = getAxes(pt.immersal);
+    sumA += a; sumB += b;
+    sumFx += pt.floorPlan.x; sumFy += pt.floorPlan.y;
+    sumAA += a * a; sumBB += b * b;
+    sumAFx += a * pt.floorPlan.x; sumBFy += b * pt.floorPlan.y;
+  }
+
+  const denomX = n * sumAA - sumA * sumA;
+  const denomY = n * sumBB - sumB * sumB;
+
+  if (Math.abs(denomX) < 1e-10 || Math.abs(denomY) < 1e-10) return null;
+
+  const scaleX = (n * sumAFx - sumA * sumFx) / denomX;
+  const offsetX = (sumFx - scaleX * sumA) / n;
+  const scaleY = (n * sumBFy - sumB * sumFy) / denomY;
+  const offsetY = (sumFy - scaleY * sumB) / n;
+
+  return { scaleX, scaleY, offsetX, offsetY, axisMapping };
+}
 
 /**
  * Capture a frame from the video element and encode as base64 PNG.
@@ -197,6 +274,11 @@ export async function localizeVPS(
       y: floorPos.y,
       accuracy,
       raw: { px: data.px, py: data.py, pz: data.pz },
+      rotation: {
+        r00: data.r00, r01: data.r01, r02: data.r02,
+        r10: data.r10, r11: data.r11, r12: data.r12,
+        r20: data.r20, r21: data.r21, r22: data.r22,
+      },
     };
   } catch {
     return { success: false, x: 0, y: 0, accuracy: 999 };

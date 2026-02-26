@@ -7,7 +7,8 @@ import { useSettings } from "@/context/SettingsContext";
 import { t } from "@/lib/i18n";
 import { speak, stopSpeaking } from "@/lib/tts";
 import { useIndoorPosition } from "@/lib/useIndoorPosition";
-import { localizeVPS } from "@/lib/vps";
+import { localizeVPS, loadCalibration } from "@/lib/vps";
+import type { VPSRotationMatrix } from "@/lib/vps";
 import ThreeARScene from "@/components/ThreeARScene";
 
 const GoogleMapView = dynamic(() => import("@/components/GoogleMapView"), { ssr: false });
@@ -55,6 +56,12 @@ export default function SplitNavigationView({
 
   // Heading diff for HTML HUD
   const [headingDiff, setHeadingDiff] = useState<number | null>(null);
+
+  // VPS rotation matrix for Three.js camera orientation
+  const [vpsRotation, setVpsRotation] = useState<VPSRotationMatrix | null>(null);
+
+  // Continuous VPS localization state
+  const vpsIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const nodeMap = useMemo(
     () => new Map(floor.nodes.map((n) => [n.id, n])),
@@ -166,6 +173,47 @@ export default function SplitNavigationView({
       }
     }
   }, [trackingActive, liveHeading, routeHeading, language]);
+
+  // ── CONTINUOUS VPS LOCALIZATION — auto every 3 seconds ──
+  useEffect(() => {
+    if (!trackingActive || cameraState !== "active") {
+      // Clear interval when not tracking or camera off
+      if (vpsIntervalRef.current) {
+        clearInterval(vpsIntervalRef.current);
+        vpsIntervalRef.current = null;
+      }
+      return;
+    }
+
+    const calibration = loadCalibration("142184"); // Load saved calibration
+    const mapping = calibration
+      ? { scaleX: calibration.scaleX, scaleY: calibration.scaleY, offsetX: calibration.offsetX, offsetY: calibration.offsetY, axisMapping: calibration.axisMapping }
+      : { offsetX: floor.width / 2, offsetY: floor.height / 2 };
+
+    const doVPS = async () => {
+      if (!videoRef.current) return;
+      try {
+        const result = await localizeVPS(videoRef.current, mapping);
+        if (result.success && result.accuracy <= 2.5) {
+          applyBeaconFix({ x: result.x, y: result.y }, result.accuracy);
+          if (result.rotation) {
+            setVpsRotation(result.rotation);
+          }
+        }
+      } catch { /* ignore transient VPS errors */ }
+    };
+
+    // Run VPS immediately, then every 3 seconds
+    doVPS();
+    vpsIntervalRef.current = setInterval(doVPS, 3000);
+
+    return () => {
+      if (vpsIntervalRef.current) {
+        clearInterval(vpsIntervalRef.current);
+        vpsIntervalRef.current = null;
+      }
+    };
+  }, [trackingActive, cameraState, applyBeaconFix, floor.width, floor.height]);
 
   // Remaining distance
   const remainingDistance = Math.max(0, Math.round(totalDistance - distanceWalked));
@@ -368,6 +416,7 @@ export default function SplitNavigationView({
               metersPerPx={metersPerPx}
               heading={liveHeading}
               routeHeading={routeHeading}
+              vpsRotation={vpsRotation}
               destinationName={destinationName}
               visible={cameraState === "active"}
               distanceWalked={distanceWalked}
@@ -575,16 +624,20 @@ export default function SplitNavigationView({
         </button>
       )}
 
-      {/* ═══ VPS Localize + Recalibrate buttons ═══ */}
+      {/* ═══ VPS Status + Recalibrate ═══ */}
       {trackingActive && (
         <div className="relative z-30 mx-3 mb-2 flex justify-center gap-2">
-          {cameraState === "active" && (
-            <VPSLocalizeButton
-              videoRef={videoRef}
-              applyBeaconFix={applyBeaconFix}
-              floorWidth={floor.width}
-              floorHeight={floor.height}
-            />
+          {cameraState === "active" && vpsRotation && (
+            <div className="bg-green-600/80 text-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-green-300 animate-pulse" />
+              VPS Active
+            </div>
+          )}
+          {cameraState === "active" && !vpsRotation && (
+            <div className="bg-purple-500/80 text-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2">
+              <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              VPS Scanning...
+            </div>
           )}
           {confidence < 0.5 && (
             <button
@@ -646,83 +699,6 @@ export default function SplitNavigationView({
         </div>
       </div>
     </div>
-  );
-}
-
-/** VPS Localize Button — captures camera frame and localizes via Immersal */
-function VPSLocalizeButton({
-  videoRef,
-  applyBeaconFix,
-  floorWidth,
-  floorHeight,
-}: {
-  videoRef: React.RefObject<HTMLVideoElement | null>;
-  applyBeaconFix: (pos: { x: number; y: number }, accuracy: number) => void;
-  floorWidth: number;
-  floorHeight: number;
-}) {
-  const [vpsState, setVpsState] = useState<"idle" | "scanning" | "success" | "fail">("idle");
-
-  const handleLocalize = useCallback(async () => {
-    if (!videoRef.current) return;
-    setVpsState("scanning");
-
-    try {
-      const result = await localizeVPS(videoRef.current, {
-        offsetX: floorWidth / 2,
-        offsetY: floorHeight / 2,
-      });
-
-      if (result.success) {
-        applyBeaconFix({ x: result.x, y: result.y }, result.accuracy);
-        setVpsState("success");
-      } else {
-        setVpsState("fail");
-      }
-    } catch {
-      setVpsState("fail");
-    }
-
-    // Reset state after 3 seconds
-    setTimeout(() => setVpsState("idle"), 3000);
-  }, [videoRef, applyBeaconFix, floorWidth, floorHeight]);
-
-  return (
-    <button
-      onClick={handleLocalize}
-      disabled={vpsState === "scanning"}
-      className={`px-5 py-2 rounded-full text-xs font-bold flex items-center gap-2 shadow-lg transition-colors ${
-        vpsState === "scanning"
-          ? "bg-blue-400/70 text-white cursor-wait"
-          : vpsState === "success"
-          ? "bg-green-500/90 text-white"
-          : vpsState === "fail"
-          ? "bg-red-500/90 text-white"
-          : "bg-purple-500/90 text-white shadow-purple-500/30"
-      }`}
-    >
-      {vpsState === "scanning" && (
-        <>
-          <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          Scanning...
-        </>
-      )}
-      {vpsState === "success" && "✓ Position Fixed"}
-      {vpsState === "fail" && "✗ Try Again"}
-      {vpsState === "idle" && (
-        <>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <circle cx="12" cy="12" r="3" />
-            <line x1="12" y1="2" x2="12" y2="6" />
-            <line x1="12" y1="18" x2="12" y2="22" />
-            <line x1="2" y1="12" x2="6" y2="12" />
-            <line x1="18" y1="12" x2="22" y2="12" />
-          </svg>
-          VPS Localize
-        </>
-      )}
-    </button>
   );
 }
 
