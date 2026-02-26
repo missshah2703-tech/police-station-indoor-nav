@@ -10,64 +10,60 @@ function getJwtSecret(): Uint8Array {
   return new TextEncoder().encode(secret);
 }
 
+/** JWT verify options — pin algorithm to HS256, add clock tolerance */
+const JWT_VERIFY_OPTIONS = {
+  algorithms: ["HS256" as const],
+  clockTolerance: 15, // 15 seconds tolerance for clock skew
+};
+
+/** Verify admin JWT token, returns payload or null */
+async function verifyAdminToken(request: NextRequest) {
+  const token = request.cookies.get("admin_token")?.value;
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, getJwtSecret(), JWT_VERIFY_OPTIONS);
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Security headers for all responses
+  // ─── Security headers for all responses ───
   const response = NextResponse.next();
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("X-Frame-Options", "DENY");
   response.headers.set("X-XSS-Protection", "1; mode=block");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   response.headers.set(
+    "Strict-Transport-Security",
+    "max-age=31536000; includeSubDomains; preload"
+  );
+  response.headers.set(
+    "Permissions-Policy",
+    "camera=(self), microphone=(), geolocation=(self), accelerometer=(self), gyroscope=(self)"
+  );
+  response.headers.set(
     "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'"
+    [
+      "default-src 'self'",
+      "script-src 'self' 'wasm-unsafe-eval' 'unsafe-inline' https://maps.googleapis.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "img-src 'self' data: blob: https://maps.googleapis.com https://maps.gstatic.com https://*.google.com https://*.googleapis.com",
+      "font-src 'self' https://fonts.gstatic.com",
+      "media-src 'self' blob:",
+      "connect-src 'self' https://maps.googleapis.com https://*.googleapis.com https://api.immersal.com",
+      "worker-src 'self' blob:",
+      "frame-src 'self'",
+    ].join("; ")
   );
 
-  // ─── Setup redirect: check via API if admins exist ───
-  // (Can't use fs in Edge Runtime — use /api/admin/setup GET to check)
-  if (
-    pathname.startsWith("/admin") &&
-    pathname !== "/admin/setup" &&
-    !pathname.startsWith("/api/")
-  ) {
-    try {
-      const checkUrl = new URL("/api/admin/setup", request.url);
-      const checkRes = await fetch(checkUrl);
-      if (checkRes.ok) {
-        const data = await checkRes.json();
-        if (data.needsSetup) {
-          return NextResponse.redirect(new URL("/admin/setup", request.url));
-        }
-      }
-    } catch {
-      // If check fails, proceed normally
-    }
-  }
-
-  // ─── Setup page: block if admins already exist ───
-  if (pathname === "/admin/setup") {
-    try {
-      const checkUrl = new URL("/api/admin/setup", request.url);
-      const checkRes = await fetch(checkUrl);
-      if (checkRes.ok) {
-        const data = await checkRes.json();
-        if (!data.needsSetup) {
-          return NextResponse.redirect(new URL("/admin/login", request.url));
-        }
-      }
-    } catch { /* proceed */ }
-  }
-
-  // Protect admin dashboard routes (not login/setup)
+  // ─── Protect admin dashboard pages ───
   if (pathname.startsWith("/admin/dashboard")) {
-    const token = request.cookies.get("admin_token")?.value;
-    if (!token) {
-      return NextResponse.redirect(new URL("/admin/login", request.url));
-    }
-    try {
-      await jwtVerify(token, getJwtSecret());
-    } catch {
+    const payload = await verifyAdminToken(request);
+    if (!payload) {
       const redirectResponse = NextResponse.redirect(
         new URL("/admin/login", request.url)
       );
@@ -76,18 +72,24 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Block admin login if already authenticated
+  // ─── Block admin login page if already authenticated ───
   if (pathname === "/admin/login") {
-    const token = request.cookies.get("admin_token")?.value;
-    if (token) {
-      try {
-        await jwtVerify(token, getJwtSecret());
-        return NextResponse.redirect(
-          new URL("/admin/dashboard", request.url)
-        );
-      } catch {
-        // Token invalid, let them see login
-      }
+    const payload = await verifyAdminToken(request);
+    if (payload) {
+      return NextResponse.redirect(
+        new URL("/admin/dashboard", request.url)
+      );
+    }
+  }
+
+  // ─── Protect admin API routes (except setup check + login) ───
+  if (
+    pathname.startsWith("/api/admin/") &&
+    pathname !== "/api/admin/setup"
+  ) {
+    const payload = await verifyAdminToken(request);
+    if (!payload) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
   }
 
@@ -95,5 +97,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/api/:path*"],
+  matcher: ["/admin/:path*", "/api/admin/:path*"],
 };
