@@ -1,548 +1,345 @@
 {
   "id": "demo",
-  "name": {
-    "en": "Al Qusais Police Station",
-    "ar": "مركز شرطة القصيص",
-    "hi": "अल कुसैस पुलिस स्टेशन"
-  },
-  "address": {
-    "en": "Al Qusais, Dubai, UAE",
-    "ar": "القصيص، دبي، الإمارات",
-    "hi": "अल कुसैस, दुबई, यूएई"
-  },
-  "defaultStartNode": "entrance",
+  "name": "Al Qusais Police Station",
+  "address": "Al Qusais, Dubai, UAE",
+  "floorPlanImage": "/floor-plan.png",
   "floors": [
     {
       "id": "ground",
-      "name": {
-        "en": "Ground Floor",
-        "ar": "الطابق الأرضي",
-        "hi": "भूतल"
-      },
+      "name": "Ground Floor",
       "level": 0,
-      "planImage": "/floor-plan.png",
+      "floorPlanImage": "/floor-plan.png",
       "width": 1407,
-      "height": 1135,
-      "nodes": [
-        {
-          "id": "entrance",
-          "x": 764,
-          "y": 840,
-          "label": {
-            "en": "Entrance",
-            "ar": "المدخل",
-            "hi": "प्रवेश"
-          }
-        },
-        {
-          "id": "c_entrance",
-          "x": 700,
-          "y": 770,
-          "label": {
-            "en": "Entry Hall",
-            "ar": "بهو الدخول",
-            "hi": "प्रवेश हॉल"
-          }
-        },
-        {
-          "id": "reception",
-          "x": 458,
-          "y": 580,
-          "label": {
-            "en": "Reception Counter",
-            "ar": "مكتب الاستقبال",
-            "hi": "रिसेप्शन काउंटर"
-          }
-        },
-        {
-          "id": "information",
-          "x": 665,
-          "y": 460,
-          "label": {
-            "en": "Information",
-            "ar": "الاستعلامات",
-            "hi": "सूचना"
-          }
-        },
-        {
-          "id": "c_main",
-          "x": 665,
-          "y": 580,
-          "label": {
-            "en": "Main Hall",
-            "ar": "الصالة الرئيسية",
-            "hi": "मुख्य हॉल"
-          }
-        },
-        {
-          "id": "male_toilets",
-          "x": 552,
-          "y": 693,
-          "label": {
-            "en": "Male Toilets",
-            "ar": "دورات مياه الرجال",
-            "hi": "पुरुष शौचालय"
-          }
-        },
-        {
-          "id": "female_toilet",
-          "x": 798,
-          "y": 694,
-          "label": {
-            "en": "Female Toilet",
-            "ar": "دورات مياه النساء",
-            "hi": "महिला शौचालय"
-          }
-        },
-        {
-          "id": "c_left_wing",
-          "x": 350,
-          "y": 506,
-          "label": {
-            "en": "Left Wing",
-            "ar": "الجناح الأيسر",
-            "hi": "बायाँ विंग"
-          }
-        },
-        {
-          "id": "c_right_wing",
-          "x": 950,
-          "y": 506,
-          "label": {
-            "en": "Right Wing",
-            "ar": "الجناح الأيمن",
-            "hi": "दायाँ विंग"
-          }
-        },
-        {
-          "id": "room_left_1",
-          "x": 407,
-          "y": 506,
-          "label": {
-            "en": "Office Room 1",
-            "ar": "غرفة مكتب ١",
-            "hi": "कार्यालय कक्ष 1"
-          }
-        },
-        {
-          "id": "room_right_1",
-          "x": 913,
-          "y": 506,
-          "label": {
-            "en": "Office Room 2",
-            "ar": "غرفة مكتب ٢",
-            "hi": "कार्यालय कक्ष 2"
-          }
-        },
-        {
-          "id": "room_large_l",
-          "x": 106,
-          "y": 478,
-          "label": {
-            "en": "Conference Room",
-            "ar": "قاعة الاجتماعات",
-            "hi": "सम्मेलन कक्ष"
-          }
-        },
-        {
-          "id": "room_large_r",
-          "x": 1120,
-          "y": 527,
-          "label": {
-            "en": "Investigation Room",
-            "ar": "غرفة التحقيق",
-            "hi": "जांच कक्ष"
-          }
-        },
-        {
-          "id": "c_north",
-          "x": 665,
-          "y": 300,
-          "label": {
-            "en": "North Corridor",
-            "ar": "الممر الشمالي",
-            "hi": "उत्तरी गलियारा"
-          }
-        },
-        {
-          "id": "room_nw_1",
-          "x": 263,
-          "y": 197,
-          "label": {
-            "en": "Traffic Department",
-            "ar": "قسم المرور",
-            "hi": "यातायात विभाग"
-          }
-        },
-        {
-          "id": "room_ne_1",
-          "x": 1072,
-          "y": 197,
-          "label": {
-            "en": "Criminal Investigation",
-            "ar": "التحقيقات الجنائية",
-            "hi": "आपराधिक जांच"
-          }
-        },
-        {
-          "id": "room_nw_top",
-          "x": 115,
-          "y": 110,
-          "label": {
-            "en": "Commander Office",
-            "ar": "مكتب القائد",
-            "hi": "कमांडर कार्यालय"
-          }
-        },
-        {
-          "id": "room_nw_mid",
-          "x": 115,
-          "y": 245,
-          "label": {
-            "en": "Community Services",
-            "ar": "الخدمات المجتمعية",
-            "hi": "सामुदायिक सेवाएं"
-          }
-        },
-        {
-          "id": "room_ne_top",
-          "x": 1223,
-          "y": 91,
-          "label": {
-            "en": "IT Department",
-            "ar": "قسم تقنية المعلومات",
-            "hi": "आईटी विभाग"
-          }
-        },
-        {
-          "id": "room_ne_mid",
-          "x": 1215,
-          "y": 245,
-          "label": {
-            "en": "Records Room",
-            "ar": "غرفة السجلات",
-            "hi": "रिकॉर्ड कक्ष"
-          }
-        },
-        {
-          "id": "room_sw",
-          "x": 326,
-          "y": 767,
-          "label": {
-            "en": "Waiting Area",
-            "ar": "منطقة الانتظار",
-            "hi": "प्रतीक्षा क्षेत्र"
-          }
-        },
-        {
-          "id": "room_se",
-          "x": 1004,
-          "y": 767,
-          "label": {
-            "en": "Security Room",
-            "ar": "غرفة الأمن",
-            "hi": "सुरक्षा कक्ष"
-          }
-        },
-        {
-          "id": "parking",
-          "x": 1145,
-          "y": 1064,
-          "label": {
-            "en": "Parking",
-            "ar": "المواقف",
-            "hi": "पार्किंग"
-          }
-        },
-        {
-          "id": "c_south_w",
-          "x": 450,
-          "y": 700,
-          "label": {
-            "en": "South West",
-            "ar": "الجنوب الغربي",
-            "hi": "दक्षिण पश्चिम"
-          }
-        },
-        {
-          "id": "c_south_e",
-          "x": 850,
-          "y": 700,
-          "label": {
-            "en": "South East",
-            "ar": "الجنوب الشرقي",
-            "hi": "दक्षिण पूर्वी"
-          }
-        }
-      ],
-      "edges": [
-        {
-          "from": "entrance",
-          "to": "c_entrance",
-          "weight": 7,
-          "stairs": false
-        },
-        {
-          "from": "c_entrance",
-          "to": "c_main",
-          "weight": 19,
-          "stairs": false
-        },
-        {
-          "from": "c_entrance",
-          "to": "c_south_w",
-          "weight": 25,
-          "stairs": false
-        },
-        {
-          "from": "c_entrance",
-          "to": "c_south_e",
-          "weight": 15,
-          "stairs": false
-        },
-        {
-          "from": "c_main",
-          "to": "reception",
-          "weight": 21,
-          "stairs": false
-        },
-        {
-          "from": "c_main",
-          "to": "information",
-          "weight": 12,
-          "stairs": false
-        },
-        {
-          "from": "c_main",
-          "to": "c_left_wing",
-          "weight": 32,
-          "stairs": false
-        },
-        {
-          "from": "c_main",
-          "to": "c_right_wing",
-          "weight": 29,
-          "stairs": false
-        },
-        {
-          "from": "c_main",
-          "to": "c_north",
-          "weight": 28,
-          "stairs": false
-        },
-        {
-          "from": "c_south_w",
-          "to": "male_toilets",
-          "weight": 10,
-          "stairs": false
-        },
-        {
-          "from": "c_south_w",
-          "to": "room_sw",
-          "weight": 12,
-          "stairs": false
-        },
-        {
-          "from": "c_south_e",
-          "to": "female_toilet",
-          "weight": 5,
-          "stairs": false
-        },
-        {
-          "from": "c_south_e",
-          "to": "room_se",
-          "weight": 15,
-          "stairs": false
-        },
-        {
-          "from": "c_south_e",
-          "to": "parking",
-          "weight": 40,
-          "stairs": false
-        },
-        {
-          "from": "c_left_wing",
-          "to": "room_left_1",
-          "weight": 6,
-          "stairs": false
-        },
-        {
-          "from": "c_left_wing",
-          "to": "room_large_l",
-          "weight": 25,
-          "stairs": false
-        },
-        {
-          "from": "c_right_wing",
-          "to": "room_right_1",
-          "weight": 4,
-          "stairs": false
-        },
-        {
-          "from": "c_right_wing",
-          "to": "room_large_r",
-          "weight": 17,
-          "stairs": false
-        },
-        {
-          "from": "c_north",
-          "to": "room_nw_1",
-          "weight": 42,
-          "stairs": false
-        },
-        {
-          "from": "c_north",
-          "to": "room_ne_1",
-          "weight": 42,
-          "stairs": false
-        },
-        {
-          "from": "room_nw_1",
-          "to": "room_nw_top",
-          "weight": 18,
-          "stairs": false
-        },
-        {
-          "from": "room_nw_1",
-          "to": "room_nw_mid",
-          "weight": 15,
-          "stairs": false
-        },
-        {
-          "from": "room_ne_1",
-          "to": "room_ne_top",
-          "weight": 18,
-          "stairs": false
-        },
-        {
-          "from": "room_ne_1",
-          "to": "room_ne_mid",
-          "weight": 15,
-          "stairs": false
-        }
-      ],
-      "pois": [
-        {
-          "nodeId": "entrance",
-          "icon": "🚪",
-          "category": "entrance",
-          "description": {
-            "en": "Main entrance of the police station",
-            "ar": "المدخل الرئيسي لمركز الشرطة",
-            "hi": "पुलिस स्टेशन का मुख्य प्रवेश द्वार"
-          }
-        },
-        {
-          "nodeId": "reception",
-          "icon": "🏢",
-          "category": "service",
-          "description": {
-            "en": "Reception counter — check in here",
-            "ar": "مكتب الاستقبال — سجل هنا",
-            "hi": "रिसेप्शन काउंटर — यहाँ चेक इन करें"
-          }
-        },
-        {
-          "nodeId": "information",
-          "icon": "ℹ️",
-          "category": "service",
-          "description": {
-            "en": "Information desk — general inquiries",
-            "ar": "مكتب الاستعلامات — الاستفسارات العامة",
-            "hi": "सूचना डेस्क — सामान्य पूछताछ"
-          }
-        },
-        {
-          "nodeId": "male_toilets",
-          "icon": "🚹",
-          "category": "facility",
-          "description": {
-            "en": "Male toilets ♿",
-            "ar": "دورات مياه الرجال ♿",
-            "hi": "पुरुष शौचालय ♿"
-          }
-        },
-        {
-          "nodeId": "female_toilet",
-          "icon": "🚺",
-          "category": "facility",
-          "description": {
-            "en": "Female toilet ♿",
-            "ar": "دورات مياه النساء ♿",
-            "hi": "महिला शौचालय ♿"
-          }
-        },
-        {
-          "nodeId": "room_nw_1",
-          "icon": "🚗",
-          "category": "department",
-          "description": {
-            "en": "Traffic fines, licenses & vehicle services",
-            "ar": "مخالفات المرور والرخص وخدمات المركبات",
-            "hi": "ट्रैफ़िक जुर्माना, लाइसेंस और वाहन सेवाएं"
-          }
-        },
-        {
-          "nodeId": "room_ne_1",
-          "icon": "🔍",
-          "category": "department",
-          "description": {
-            "en": "File reports & criminal case inquiries",
-            "ar": "تقديم البلاغات والاستعلام عن القضايا الجنائية",
-            "hi": "रिपोर्ट दर्ज करें और आपराधिक मामलों की जांच"
-          }
-        },
-        {
-          "nodeId": "room_large_l",
-          "icon": "🤝",
-          "category": "facility",
-          "description": {
-            "en": "Conference room for meetings",
-            "ar": "قاعة اجتماعات",
-            "hi": "बैठक के लिए सम्मेलन कक्ष"
-          }
-        },
-        {
-          "nodeId": "room_large_r",
-          "icon": "📋",
-          "category": "department",
-          "description": {
-            "en": "Investigation & inquiry room",
-            "ar": "غرفة التحقيق والاستفسار",
-            "hi": "जांच और पूछताछ कक्ष"
-          }
-        },
-        {
-          "nodeId": "room_nw_top",
-          "icon": "⭐",
-          "category": "department",
-          "description": {
-            "en": "Station commander's office",
-            "ar": "مكتب قائد المركز",
-            "hi": "स्टेशन कमांडर का कार्यालय"
-          }
-        },
-        {
-          "nodeId": "room_nw_mid",
-          "icon": "🤝",
-          "category": "department",
-          "description": {
-            "en": "Community services & public relations",
-            "ar": "خدمات مجتمعية وعلاقات عامة",
-            "hi": "सामुदायिक सेवाएं और जनसंपर्क"
-          }
-        },
-        {
-          "nodeId": "parking",
-          "icon": "🅿️",
-          "category": "facility",
-          "description": {
-            "en": "Parking area",
-            "ar": "منطقة المواقف",
-            "hi": "पार्किंग क्षेत्र"
-          }
-        }
-      ]
+      "height": 1135
     }
-  ]
+  ],
+  "nodes": [
+    {
+      "id": "entrance",
+      "x": 764,
+      "y": 840,
+      "label": "Entrance"
+    },
+    {
+      "id": "c_entrance",
+      "x": 700,
+      "y": 770,
+      "label": "Entry Hall"
+    },
+    {
+      "id": "reception",
+      "x": 458,
+      "y": 580,
+      "label": "Reception Counter"
+    },
+    {
+      "id": "information",
+      "x": 665,
+      "y": 460,
+      "label": "Information"
+    },
+    {
+      "id": "c_main",
+      "x": 665,
+      "y": 580,
+      "label": "Main Hall"
+    },
+    {
+      "id": "male_toilets",
+      "x": 552,
+      "y": 693,
+      "label": "Male Toilets"
+    },
+    {
+      "id": "female_toilet",
+      "x": 798,
+      "y": 694,
+      "label": "Female Toilet"
+    },
+    {
+      "id": "c_left_wing",
+      "x": 350,
+      "y": 506,
+      "label": "Left Wing"
+    },
+    {
+      "id": "c_right_wing",
+      "x": 950,
+      "y": 506,
+      "label": "Right Wing"
+    },
+    {
+      "id": "room_left_1",
+      "x": 407,
+      "y": 506,
+      "label": "Office Room 1"
+    },
+    {
+      "id": "room_right_1",
+      "x": 913,
+      "y": 506,
+      "label": "Office Room 2"
+    },
+    {
+      "id": "room_large_l",
+      "x": 106,
+      "y": 478,
+      "label": "Conference Room"
+    },
+    {
+      "id": "room_large_r",
+      "x": 1120,
+      "y": 527,
+      "label": "Investigation Room"
+    },
+    {
+      "id": "c_north",
+      "x": 665,
+      "y": 300,
+      "label": "North Corridor"
+    },
+    {
+      "id": "room_nw_1",
+      "x": 263,
+      "y": 197,
+      "label": "Traffic Department"
+    },
+    {
+      "id": "room_ne_1",
+      "x": 1072,
+      "y": 197,
+      "label": "Criminal Investigation"
+    },
+    {
+      "id": "room_nw_top",
+      "x": 115,
+      "y": 110,
+      "label": "Commander Office"
+    },
+    {
+      "id": "room_nw_mid",
+      "x": 115,
+      "y": 245,
+      "label": "Community Services"
+    },
+    {
+      "id": "room_ne_top",
+      "x": 1223,
+      "y": 91,
+      "label": "IT Department"
+    },
+    {
+      "id": "room_ne_mid",
+      "x": 1215,
+      "y": 245,
+      "label": "Records Room"
+    },
+    {
+      "id": "room_sw",
+      "x": 326,
+      "y": 767,
+      "label": "Waiting Area"
+    },
+    {
+      "id": "room_se",
+      "x": 1004,
+      "y": 767,
+      "label": "Security Room"
+    },
+    {
+      "id": "parking",
+      "x": 1145,
+      "y": 1064,
+      "label": "Parking"
+    },
+    {
+      "id": "c_south_w",
+      "x": 450,
+      "y": 700,
+      "label": "South West"
+    },
+    {
+      "id": "c_south_e",
+      "x": 850,
+      "y": 700,
+      "label": "South East"
+    }
+  ],
+  "edges": [
+    {
+      "from": "entrance",
+      "to": "c_entrance",
+      "weight": 7
+    },
+    {
+      "from": "c_entrance",
+      "to": "c_main",
+      "weight": 19
+    },
+    {
+      "from": "c_entrance",
+      "to": "c_south_w",
+      "weight": 25
+    },
+    {
+      "from": "c_entrance",
+      "to": "c_south_e",
+      "weight": 15
+    },
+    {
+      "from": "c_main",
+      "to": "reception",
+      "weight": 21
+    },
+    {
+      "from": "c_main",
+      "to": "information",
+      "weight": 12
+    },
+    {
+      "from": "c_main",
+      "to": "c_left_wing",
+      "weight": 32
+    },
+    {
+      "from": "c_main",
+      "to": "c_right_wing",
+      "weight": 29
+    },
+    {
+      "from": "c_main",
+      "to": "c_north",
+      "weight": 28
+    },
+    {
+      "from": "c_south_w",
+      "to": "male_toilets",
+      "weight": 10
+    },
+    {
+      "from": "c_south_w",
+      "to": "room_sw",
+      "weight": 12
+    },
+    {
+      "from": "c_south_e",
+      "to": "female_toilet",
+      "weight": 5
+    },
+    {
+      "from": "c_south_e",
+      "to": "room_se",
+      "weight": 15
+    },
+    {
+      "from": "c_south_e",
+      "to": "parking",
+      "weight": 40
+    },
+    {
+      "from": "c_left_wing",
+      "to": "room_left_1",
+      "weight": 6
+    },
+    {
+      "from": "c_left_wing",
+      "to": "room_large_l",
+      "weight": 25
+    },
+    {
+      "from": "c_right_wing",
+      "to": "room_right_1",
+      "weight": 4
+    },
+    {
+      "from": "c_right_wing",
+      "to": "room_large_r",
+      "weight": 17
+    },
+    {
+      "from": "c_north",
+      "to": "room_nw_1",
+      "weight": 42
+    },
+    {
+      "from": "c_north",
+      "to": "room_ne_1",
+      "weight": 42
+    },
+    {
+      "from": "room_nw_1",
+      "to": "room_nw_top",
+      "weight": 18
+    },
+    {
+      "from": "room_nw_1",
+      "to": "room_nw_mid",
+      "weight": 15
+    },
+    {
+      "from": "room_ne_1",
+      "to": "room_ne_top",
+      "weight": 18
+    },
+    {
+      "from": "room_ne_1",
+      "to": "room_ne_mid",
+      "weight": 15
+    }
+  ],
+  "pois": [
+    {
+      "id": "poi-entrance",
+      "nodeId": "entrance",
+      "name": "Main entrance of the police station",
+      "type": "entrance",
+      "icon": "🚪",
+      "description": "Main entrance of the police station"
+    },
+    {
+      "id": "poi-reception",
+      "nodeId": "reception",
+      "name": "Reception counter — check in here",
+      "type": "service",
+      "icon": "🏢",
+      "description": "Reception counter — check in here"
+    },
+    {
+      "id": "poi-male_toilets",
+      "nodeId": "male_toilets",
+      "name": "Male toilets ♿",
+      "type": "facility",
+      "icon": "🚹",
+      "description": "Male toilets ♿"
+    },
+    {
+      "id": "poi-female_toilet",
+      "nodeId": "female_toilet",
+      "name": "Female toilet ♿",
+      "type": "facility",
+      "icon": "🚺",
+      "description": "Female toilet ♿"
+    },
+    {
+      "id": "poi-room_nw_top",
+      "nodeId": "room_nw_top",
+      "name": "Station commander's office",
+      "type": "department",
+      "icon": "⭐",
+      "description": "Station commander's office"
+    },
+    {
+      "id": "poi-parking",
+      "nodeId": "parking",
+      "name": "Parking area",
+      "type": "facility",
+      "icon": "🅿️",
+      "description": "Parking area"
+    }
+  ],
+  "scaleFactor": 10,
+  "status": "published",
+  "version": 1,
+  "createdAt": "2026-02-26T07:01:45.030Z",
+  "updatedAt": "2026-02-26T07:02:03.410Z"
 }

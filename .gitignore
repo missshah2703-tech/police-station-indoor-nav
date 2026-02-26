@@ -9,4 +9,10 @@ next-env.d.ts
 certificates/
 cloudflared.exe
 tunnel_*.txt
+cf_output.txt
+cookies.txt
 *.pdf
+
+# Sensitive data
+data/admins.json
+data/audit_log.jsonl

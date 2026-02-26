@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useSettings } from "@/context/SettingsContext";
 import { t, Language, languageNames } from "@/lib/i18n";
 
@@ -11,9 +12,16 @@ export default function HomePage() {
     <main className="min-h-screen flex flex-col bg-[#0a1628]">
       {/* Top section with branding */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 pt-16 pb-8">
-        {/* UAE Police crest/logo area */}
-        <div className="w-28 h-28 bg-[#c5a44e] rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
-          <span className="text-6xl">🏛️</span>
+        {/* Dubai Police Logo */}
+        <div className="w-28 h-28 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl overflow-hidden bg-white">
+          <Image
+            src="/dubai-police-logo.png"
+            alt="Dubai Police"
+            width={112}
+            height={112}
+            className="object-contain p-2"
+            priority
+          />
         </div>
         <h1 className="text-2xl font-bold text-white text-center">
           {t("app.title", language)}
@@ -96,6 +104,20 @@ export default function HomePage() {
               {t("settings.language", language)},{" "}
               {t("settings.accessibility", language)}
             </div>
+          </div>
+        </Link>
+
+        {/* Admin Dashboard */}
+        <Link
+          href="/admin/login"
+          className="flex items-center gap-4 bg-white/5 text-gray-500 p-4 rounded-2xl hover:bg-white/10 transition-colors"
+        >
+          <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center text-2xl">
+            🔒
+          </div>
+          <div>
+            <div className="font-semibold text-sm">Admin Dashboard</div>
+            <div className="text-xs text-gray-600">Manage locations & navigation</div>
           </div>
         </Link>
       </div>

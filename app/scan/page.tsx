@@ -1,41 +1,31 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useSettings } from "@/context/SettingsContext";
 import { t } from "@/lib/i18n";
+
+const QRScanner = dynamic(() => import("@/components/QRScanner"), { ssr: false });
 
 export default function ScanPage() {
   const { language } = useSettings();
   const router = useRouter();
   const [buildingId, setBuildingId] = useState("");
-  const [scanning, setScanning] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const [scanResult, setScanResult] = useState<string | null>(null);
+  const [showScanner, setShowScanner] = useState(false);
 
-  // Simple camera preview for QR scan appearance
-  useEffect(() => {
-    if (!scanning) return;
-    let stream: MediaStream | null = null;
-
-    async function startCamera() {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "environment" },
-        });
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      } catch {
-        // Camera not available
-      }
+  function handleScan(data: string) {
+    setScanResult(data);
+    // Extract building ID from URL like /map/office-205 or /navigate/office-205
+    const match = data.match(/\/(?:map|navigate)\/([a-zA-Z0-9_-]+)/);
+    if (match) {
+      setTimeout(() => {
+        router.push(`/map/${match[1]}?start=entrance`);
+      }, 1000);
     }
-
-    startCamera();
-    return () => {
-      stream?.getTracks().forEach((track) => track.stop());
-    };
-  }, [scanning]);
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,45 +53,47 @@ export default function ScanPage() {
       {/* Camera / QR Area */}
       <div className="flex-1 flex flex-col items-center justify-center px-6">
         <div className="w-full max-w-sm">
-          {/* QR Scanner visual */}
-          <div
-            className="relative w-64 h-64 mx-auto mb-8 rounded-3xl overflow-hidden border-2 border-[#c5a44e]/50 cursor-pointer"
-            onClick={() => {
-              setScanning(true);
-              // In production, QR decode library would parse the code
-              // For now, simulate by navigating to office after scan
-              setTimeout(() => {
-                router.push("/map/office-205?start=entrance");
-              }, 2000);
-            }}
-          >
-            {scanning ? (
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                muted
-                className="w-full h-full object-cover"
-              />
-            ) : (
+          {scanResult ? (
+            <div className="text-center py-8">
+              <div className="text-5xl mb-4">✅</div>
+              <h3 className="text-white font-semibold text-lg mb-2">QR Code Detected!</h3>
+              <p className="text-gray-400 text-sm mb-1 break-all">{scanResult}</p>
+              {scanResult.match(/\/(?:map|navigate)\/([a-zA-Z0-9_-]+)/) ? (
+                <p className="text-[#c5a44e] text-sm mt-3">Navigating to map...</p>
+              ) : (
+                <p className="text-yellow-400 text-sm mt-3">
+                  This QR code doesn&apos;t contain a valid building URL
+                </p>
+              )}
+              <button
+                onClick={() => { setScanResult(null); setShowScanner(true); }}
+                className="mt-6 px-6 py-2 bg-[#c5a44e] text-[#0a1628] rounded-lg font-semibold text-sm hover:bg-[#d4b35e] transition-colors"
+              >
+                Scan Another
+              </button>
+            </div>
+          ) : showScanner ? (
+            <QRScanner onScan={handleScan} />
+          ) : (
+            <div
+              className="relative w-64 h-64 mx-auto mb-8 rounded-3xl overflow-hidden border-2 border-[#c5a44e]/50 cursor-pointer"
+              onClick={() => setShowScanner(true)}
+            >
               <div className="w-full h-full bg-[#0f1d35] flex flex-col items-center justify-center">
                 <span className="text-7xl mb-4">📷</span>
                 <p className="text-gray-400 text-sm text-center px-4">
                   {t("scan.instruction", language)}
                 </p>
               </div>
-            )}
-            {/* Scanner frame corners */}
-            <div className="absolute inset-0 pointer-events-none">
-              <div className="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-[#c5a44e] rounded-tl-2xl" />
-              <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-[#c5a44e] rounded-tr-2xl" />
-              <div className="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-[#c5a44e] rounded-bl-2xl" />
-              <div className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-[#c5a44e] rounded-br-2xl" />
+              {/* Scanner frame corners */}
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-[#c5a44e] rounded-tl-2xl" />
+                <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-[#c5a44e] rounded-tr-2xl" />
+                <div className="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-[#c5a44e] rounded-bl-2xl" />
+                <div className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-[#c5a44e] rounded-br-2xl" />
+              </div>
             </div>
-            {scanning && (
-              <div className="absolute inset-x-0 top-1/2 h-0.5 bg-[#c5a44e] animate-pulse" />
-            )}
-          </div>
+          )}
 
           <p className="text-center text-gray-400 text-sm mb-6">
             {t("scan.or", language)}

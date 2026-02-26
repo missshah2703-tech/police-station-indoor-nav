@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect, useRef } from "react";
 import {
   MapContainer,
   ImageOverlay,
@@ -8,6 +8,7 @@ import {
   Polyline,
   CircleMarker,
   Popup,
+  useMap,
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -27,6 +28,8 @@ interface Props {
   liveHeading?: number | null;
   /** Position confidence 0–1 (affects accuracy ring size) */
   confidence?: number;
+  /** Auto-pan map to follow user position */
+  autoFollow?: boolean;
 }
 
 /** Custom div-icon for POI markers */
@@ -72,6 +75,7 @@ export default function MapView({
   livePosition,
   liveHeading,
   confidence = 1,
+  autoFollow = false,
 }: Props) {
   const { language } = useSettings();
 
@@ -271,6 +275,29 @@ export default function MapView({
           />
         </>
       )}
+
+      {/* Auto-follow user position */}
+      {autoFollow && livePosition && (
+        <MapFollower position={livePosition} floorHeight={floor.height} />
+      )}
     </MapContainer>
   );
+}
+
+/** Inner component that uses useMap() to auto-pan to user position */
+function MapFollower({ position, floorHeight }: { position: { x: number; y: number }; floorHeight: number }) {
+  const map = useMap();
+  const lastPanRef = useRef(0);
+
+  useEffect(() => {
+    const now = Date.now();
+    // Throttle panning to every 800ms to avoid jitter
+    if (now - lastPanRef.current < 800) return;
+    lastPanRef.current = now;
+
+    const latLng = L.latLng(floorHeight - position.y, position.x);
+    map.panTo(latLng, { animate: true, duration: 0.5 });
+  }, [position.x, position.y, floorHeight, map]);
+
+  return null;
 }

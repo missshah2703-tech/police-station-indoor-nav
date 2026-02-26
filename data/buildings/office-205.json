@@ -1,501 +1,427 @@
 {
   "id": "office-205",
-  "name": {
-    "en": "Office 205 - Floor Plan",
-    "ar": "مكتب 205 - مخطط الطابق",
-    "hi": "ऑफिस 205 - फ्लोर प्लान"
-  },
-  "address": {
-    "en": "Building 205, Dubai, UAE",
-    "ar": "مبنى 205، دبي، الإمارات",
-    "hi": "बिल्डिंग 205, दुबई, यूएई"
-  },
-  "defaultStartNode": "entrance",
+  "name": "Office 205 - Floor Plan",
+  "address": "Building 205, Dubai, UAE",
+  "floorPlanImage": "/office-floor-plan.png",
   "floors": [
     {
       "id": "ground",
-      "name": {
-        "en": "Ground Floor",
-        "ar": "الطابق الأرضي",
-        "hi": "भूतल"
-      },
+      "name": "Ground Floor",
       "level": 0,
-      "planImage": "/office-floor-plan.png",
+      "floorPlanImage": "/office-floor-plan.png",
       "width": 817,
-      "height": 737,
-      "scaleFactor": 10,
-      "nodes": [
-        {
-          "id": "entrance",
-          "x": 640,
-          "y": 690,
-          "label": {
-            "en": "Entrance",
-            "ar": "المدخل",
-            "hi": "प्रवेश"
-          }
-        },
-        {
-          "id": "c_lobby",
-          "x": 640,
-          "y": 130,
-          "label": {
-            "en": "Lobby",
-            "ar": "الردهة",
-            "hi": "लॉबी"
-          }
-        },
-        {
-          "id": "c_main_corridor",
-          "x": 400,
-          "y": 300,
-          "label": {
-            "en": "Main Corridor",
-            "ar": "الممر الرئيسي",
-            "hi": "मुख्य गलियारा"
-          }
-        },
-        {
-          "id": "c_north",
-          "x": 350,
-          "y": 100,
-          "label": {
-            "en": "North Corridor",
-            "ar": "الممر الشمالي",
-            "hi": "उत्तरी गलियारा"
-          }
-        },
-        {
-          "id": "c_west",
-          "x": 150,
-          "y": 300,
-          "label": {
-            "en": "West Corridor",
-            "ar": "الممر الغربي",
-            "hi": "पश्चिमी गलियारा"
-          }
-        },
-        {
-          "id": "c_south",
-          "x": 400,
-          "y": 550,
-          "label": {
-            "en": "South Corridor",
-            "ar": "الممر الجنوبي",
-            "hi": "दक्षिणी गलियारा"
-          }
-        },
-        {
-          "id": "c_east",
-          "x": 640,
-          "y": 400,
-          "label": {
-            "en": "East Corridor",
-            "ar": "الممر الشرقي",
-            "hi": "पूर्वी गलियारा"
-          }
-        },
-        {
-          "id": "c_south_east",
-          "x": 640,
-          "y": 600,
-          "label": {
-            "en": "SE Corridor",
-            "ar": "الممر الجنوبي الشرقي",
-            "hi": "दक्षिण पूर्वी गलियारा"
-          }
-        },
-        {
-          "id": "office_57",
-          "x": 177,
-          "y": 63,
-          "label": {
-            "en": "Office 57 (4880)",
-            "ar": "مكتب 57 (4880)",
-            "hi": "ऑफिस 57 (4880)"
-          }
-        },
-        {
-          "id": "office_56",
-          "x": 148,
-          "y": 190,
-          "label": {
-            "en": "Office 56",
-            "ar": "مكتب 56",
-            "hi": "ऑफिस 56"
-          }
-        },
-        {
-          "id": "office_58",
-          "x": 458,
-          "y": 210,
-          "label": {
-            "en": "Office 58",
-            "ar": "مكتب 58",
-            "hi": "ऑफिस 58"
-          }
-        },
-        {
-          "id": "office_55",
-          "x": 239,
-          "y": 380,
-          "label": {
-            "en": "Office 55",
-            "ar": "مكتب 55",
-            "hi": "ऑफिस 55"
-          }
-        },
-        {
-          "id": "office_54",
-          "x": 362,
-          "y": 498,
-          "label": {
-            "en": "Office 54",
-            "ar": "مكتب 54",
-            "hi": "ऑफिस 54"
-          }
-        },
-        {
-          "id": "office_53",
-          "x": 608,
-          "y": 296,
-          "label": {
-            "en": "Office 53",
-            "ar": "مكتب 53",
-            "hi": "ऑफिस 53"
-          }
-        },
-        {
-          "id": "office_52",
-          "x": 711,
-          "y": 633,
-          "label": {
-            "en": "Office 52",
-            "ar": "مكتب 52",
-            "hi": "ऑफिस 52"
-          }
-        },
-        {
-          "id": "office_51",
-          "x": 559,
-          "y": 615,
-          "label": {
-            "en": "Office 51",
-            "ar": "مكتب 51",
-            "hi": "ऑफिस 51"
-          }
-        },
-        {
-          "id": "pantry",
-          "x": 531,
-          "y": 69,
-          "label": {
-            "en": "Pantry",
-            "ar": "المطبخ",
-            "hi": "पैंट्री"
-          }
-        },
-        {
-          "id": "meeting_room",
-          "x": 396,
-          "y": 337,
-          "label": {
-            "en": "Meeting Room",
-            "ar": "غرفة الاجتماعات",
-            "hi": "मीटिंग रूम"
-          }
-        },
-        {
-          "id": "server_room",
-          "x": 757,
-          "y": 292,
-          "label": {
-            "en": "Server Room",
-            "ar": "غرفة الخادم",
-            "hi": "सर्वर रूम"
-          }
-        },
-        {
-          "id": "restroom",
-          "x": 106,
-          "y": 130,
-          "label": {
-            "en": "Restroom",
-            "ar": "دورة المياه",
-            "hi": "शौचालय"
-          }
-        }
-      ],
-      "edges": [
-        {
-          "from": "entrance",
-          "to": "c_south_east",
-          "weight": 9,
-          "stairs": false
-        },
-        {
-          "from": "c_south_east",
-          "to": "c_east",
-          "weight": 20,
-          "stairs": false
-        },
-        {
-          "from": "c_south_east",
-          "to": "c_south",
-          "weight": 24,
-          "stairs": false
-        },
-        {
-          "from": "c_south_east",
-          "to": "office_52",
-          "weight": 8,
-          "stairs": false
-        },
-        {
-          "from": "c_south_east",
-          "to": "office_51",
-          "weight": 8,
-          "stairs": false
-        },
-        {
-          "from": "c_east",
-          "to": "c_lobby",
-          "weight": 27,
-          "stairs": false
-        },
-        {
-          "from": "c_east",
-          "to": "office_53",
-          "weight": 10,
-          "stairs": false
-        },
-        {
-          "from": "c_east",
-          "to": "server_room",
-          "weight": 15,
-          "stairs": false
-        },
-        {
-          "from": "c_east",
-          "to": "c_main_corridor",
-          "weight": 26,
-          "stairs": false
-        },
-        {
-          "from": "c_lobby",
-          "to": "c_north",
-          "weight": 29,
-          "stairs": false
-        },
-        {
-          "from": "c_lobby",
-          "to": "pantry",
-          "weight": 12,
-          "stairs": false
-        },
-        {
-          "from": "c_north",
-          "to": "office_57",
-          "weight": 18,
-          "stairs": false
-        },
-        {
-          "from": "c_north",
-          "to": "office_58",
-          "weight": 14,
-          "stairs": false
-        },
-        {
-          "from": "c_north",
-          "to": "c_west",
-          "weight": 25,
-          "stairs": false
-        },
-        {
-          "from": "c_north",
-          "to": "restroom",
-          "weight": 25,
-          "stairs": false
-        },
-        {
-          "from": "c_west",
-          "to": "office_56",
-          "weight": 11,
-          "stairs": false
-        },
-        {
-          "from": "c_west",
-          "to": "office_55",
-          "weight": 10,
-          "stairs": false
-        },
-        {
-          "from": "c_west",
-          "to": "c_main_corridor",
-          "weight": 25,
-          "stairs": false
-        },
-        {
-          "from": "c_main_corridor",
-          "to": "meeting_room",
-          "weight": 4,
-          "stairs": false
-        },
-        {
-          "from": "c_main_corridor",
-          "to": "c_south",
-          "weight": 25,
-          "stairs": false
-        },
-        {
-          "from": "c_south",
-          "to": "office_54",
-          "weight": 6,
-          "stairs": false
-        }
-      ],
-      "pois": [
-        {
-          "nodeId": "office_57",
-          "icon": "👤",
-          "category": "office",
-          "description": {
-            "en": "Cabin 4880 — 9.73m²",
-            "ar": "مكتب 4880 — 9.73م²",
-            "hi": "केबिन 4880 — 9.73m²"
-          }
-        },
-        {
-          "nodeId": "office_56",
-          "icon": "🏢",
-          "category": "office",
-          "description": {
-            "en": "Office 56 — 9.25m²",
-            "ar": "مكتب 56 — 9.25م²",
-            "hi": "ऑफिस 56 — 9.25m²"
-          }
-        },
-        {
-          "nodeId": "office_58",
-          "icon": "🏢",
-          "category": "office",
-          "description": {
-            "en": "Office 58 — 11.43m²",
-            "ar": "مكتب 58 — 11.43م²",
-            "hi": "ऑफिस 58 — 11.43m²"
-          }
-        },
-        {
-          "nodeId": "office_55",
-          "icon": "🏢",
-          "category": "office",
-          "description": {
-            "en": "Office 55 — 9.46m²",
-            "ar": "مكتب 55 — 9.46م²",
-            "hi": "ऑफिस 55 — 9.46m²"
-          }
-        },
-        {
-          "nodeId": "office_54",
-          "icon": "🏢",
-          "category": "office",
-          "description": {
-            "en": "Office 54 — 9.18m²",
-            "ar": "مكتب 54 — 9.18م²",
-            "hi": "ऑफिस 54 — 9.18m²"
-          }
-        },
-        {
-          "nodeId": "office_53",
-          "icon": "🏢",
-          "category": "office",
-          "description": {
-            "en": "Office 53 — 9.30m²",
-            "ar": "مكتب 53 — 9.30م²",
-            "hi": "ऑफिस 53 — 9.30m²"
-          }
-        },
-        {
-          "nodeId": "office_52",
-          "icon": "🏢",
-          "category": "office",
-          "description": {
-            "en": "Office 52 — 9.15m²",
-            "ar": "مكتب 52 — 9.15م²",
-            "hi": "ऑफिस 52 — 9.15m²"
-          }
-        },
-        {
-          "nodeId": "office_51",
-          "icon": "🏢",
-          "category": "office",
-          "description": {
-            "en": "Office 51 — 9.23m²",
-            "ar": "مكتب 51 — 9.23م²",
-            "hi": "ऑफिस 51 — 9.23m²"
-          }
-        },
-        {
-          "nodeId": "pantry",
-          "icon": "☕",
-          "category": "facility",
-          "description": {
-            "en": "Kitchen & Pantry Area",
-            "ar": "منطقة المطبخ",
-            "hi": "किचन और पैंट्री"
-          }
-        },
-        {
-          "nodeId": "c_lobby",
-          "icon": "🚪",
-          "category": "common",
-          "description": {
-            "en": "Main Lobby Area",
-            "ar": "منطقة الردهة الرئيسية",
-            "hi": "मुख्य लॉबी क्षेत्र"
-          }
-        },
-        {
-          "nodeId": "meeting_room",
-          "icon": "📋",
-          "category": "meeting",
-          "description": {
-            "en": "Conference / Meeting Room",
-            "ar": "غرفة الاجتماعات",
-            "hi": "कॉन्फ्रेंस / मीटिंग रूम"
-          }
-        },
-        {
-          "nodeId": "server_room",
-          "icon": "🖥️",
-          "category": "facility",
-          "description": {
-            "en": "IT Server Room",
-            "ar": "غرفة خادم تقنية المعلومات",
-            "hi": "आईटी सर्वर रूम"
-          }
-        },
-        {
-          "nodeId": "restroom",
-          "icon": "🚻",
-          "category": "facility",
-          "description": {
-            "en": "Restroom",
-            "ar": "دورة المياه",
-            "hi": "शौचालय"
-          }
-        },
-        {
-          "nodeId": "entrance",
-          "icon": "🚪",
-          "category": "common",
-          "description": {
-            "en": "Main Entrance",
-            "ar": "المدخل الرئيسي",
-            "hi": "मुख्य प्रवेश"
-          }
-        }
-      ]
+      "height": 737
     }
-  ]
+  ],
+  "nodes": [
+    {
+      "id": "entrance",
+      "x": 640,
+      "y": 690,
+      "label": "Entrance"
+    },
+    {
+      "id": "c_lobby",
+      "x": 640,
+      "y": 130,
+      "label": "Lobby"
+    },
+    {
+      "id": "c_main_corridor",
+      "x": 400,
+      "y": 300,
+      "label": "Main Corridor"
+    },
+    {
+      "id": "c_north",
+      "x": 350,
+      "y": 100,
+      "label": "North Corridor"
+    },
+    {
+      "id": "c_west",
+      "x": 150,
+      "y": 300,
+      "label": "West Corridor"
+    },
+    {
+      "id": "c_south",
+      "x": 400,
+      "y": 550,
+      "label": "South Corridor"
+    },
+    {
+      "id": "c_east",
+      "x": 640,
+      "y": 400,
+      "label": "East Corridor"
+    },
+    {
+      "id": "c_south_east",
+      "x": 640,
+      "y": 600,
+      "label": "SE Corridor"
+    },
+    {
+      "id": "office_57",
+      "x": 177,
+      "y": 63,
+      "label": "Office 57 (4880)"
+    },
+    {
+      "id": "office_56",
+      "x": 148,
+      "y": 190,
+      "label": "Office 56"
+    },
+    {
+      "id": "office_58",
+      "x": 458,
+      "y": 210,
+      "label": "Office 58"
+    },
+    {
+      "id": "office_55",
+      "x": 239,
+      "y": 380,
+      "label": "Office 55"
+    },
+    {
+      "id": "office_54",
+      "x": 362,
+      "y": 498,
+      "label": "Office 54"
+    },
+    {
+      "id": "office_53",
+      "x": 608,
+      "y": 296,
+      "label": "Office 53"
+    },
+    {
+      "id": "office_52",
+      "x": 711,
+      "y": 633,
+      "label": "Office 52"
+    },
+    {
+      "id": "office_51",
+      "x": 559,
+      "y": 615,
+      "label": "Office 51"
+    },
+    {
+      "id": "pantry",
+      "x": 531,
+      "y": 69,
+      "label": "Pantry"
+    },
+    {
+      "id": "meeting_room",
+      "x": 396,
+      "y": 337,
+      "label": "Meeting Room"
+    },
+    {
+      "id": "server_room",
+      "x": 757,
+      "y": 292,
+      "label": "Server Room"
+    },
+    {
+      "id": "restroom",
+      "x": 106,
+      "y": 130,
+      "label": "Restroom"
+    },
+    {
+      "id": "N59",
+      "x": 212,
+      "y": 211
+    },
+    {
+      "id": "N60",
+      "x": 326,
+      "y": 236
+    }
+  ],
+  "edges": [
+    {
+      "from": "c_south_east",
+      "to": "c_east",
+      "weight": 200
+    },
+    {
+      "from": "c_east",
+      "to": "c_main_corridor",
+      "weight": 255
+    },
+    {
+      "from": "c_main_corridor",
+      "to": "c_south",
+      "weight": 250
+    },
+    {
+      "from": "c_main_corridor",
+      "to": "c_west",
+      "weight": 250
+    },
+    {
+      "from": "c_main_corridor",
+      "to": "c_north",
+      "weight": 205
+    },
+    {
+      "from": "c_north",
+      "to": "c_lobby",
+      "weight": 292
+    },
+    {
+      "from": "c_south",
+      "to": "c_south_east",
+      "weight": 250
+    },
+    {
+      "from": "entrance",
+      "to": "c_south_east",
+      "weight": 90
+    },
+    {
+      "from": "entrance",
+      "to": "office_52",
+      "weight": 91
+    },
+    {
+      "from": "entrance",
+      "to": "office_51",
+      "weight": 110
+    },
+    {
+      "from": "c_lobby",
+      "to": "pantry",
+      "weight": 125
+    },
+    {
+      "from": "c_main_corridor",
+      "to": "meeting_room",
+      "weight": 37
+    },
+    {
+      "from": "c_main_corridor",
+      "to": "N60",
+      "weight": 98
+    },
+    {
+      "from": "c_main_corridor",
+      "to": "office_58",
+      "weight": 107
+    },
+    {
+      "from": "c_north",
+      "to": "N60",
+      "weight": 138
+    },
+    {
+      "from": "c_west",
+      "to": "N59",
+      "weight": 108
+    },
+    {
+      "from": "c_west",
+      "to": "office_56",
+      "weight": 110
+    },
+    {
+      "from": "c_west",
+      "to": "office_55",
+      "weight": 120
+    },
+    {
+      "from": "c_south",
+      "to": "office_54",
+      "weight": 64
+    },
+    {
+      "from": "c_east",
+      "to": "office_53",
+      "weight": 109
+    },
+    {
+      "from": "c_south_east",
+      "to": "office_52",
+      "weight": 78
+    },
+    {
+      "from": "c_south_east",
+      "to": "office_51",
+      "weight": 82
+    },
+    {
+      "from": "office_57",
+      "to": "restroom",
+      "weight": 98
+    },
+    {
+      "from": "office_57",
+      "to": "office_56",
+      "weight": 130
+    },
+    {
+      "from": "office_56",
+      "to": "N59",
+      "weight": 67
+    },
+    {
+      "from": "office_56",
+      "to": "restroom",
+      "weight": 73
+    },
+    {
+      "from": "office_58",
+      "to": "N60",
+      "weight": 135
+    },
+    {
+      "from": "office_58",
+      "to": "meeting_room",
+      "weight": 141
+    },
+    {
+      "from": "office_53",
+      "to": "server_room",
+      "weight": 149
+    },
+    {
+      "from": "meeting_room",
+      "to": "N60",
+      "weight": 123
+    },
+    {
+      "from": "restroom",
+      "to": "N59",
+      "weight": 133
+    },
+    {
+      "from": "N59",
+      "to": "N60",
+      "weight": 117
+    }
+  ],
+  "pois": [
+    {
+      "id": "poi-office_57",
+      "nodeId": "office_57",
+      "name": "Cabin 4880 — 9.73m²",
+      "type": "office",
+      "icon": "👤",
+      "description": "Cabin 4880 — 9.73m²"
+    },
+    {
+      "id": "poi-office_56",
+      "nodeId": "office_56",
+      "name": "Office 56 — 9.25m²",
+      "type": "office",
+      "icon": "🏢",
+      "description": "Office 56 — 9.25m²"
+    },
+    {
+      "id": "poi-office_58",
+      "nodeId": "office_58",
+      "name": "Office 58 — 11.43m²",
+      "type": "office",
+      "icon": "🏢",
+      "description": "Office 58 — 11.43m²"
+    },
+    {
+      "id": "poi-office_55",
+      "nodeId": "office_55",
+      "name": "Office 55 — 9.46m²",
+      "type": "office",
+      "icon": "🏢",
+      "description": "Office 55 — 9.46m²"
+    },
+    {
+      "id": "poi-office_54",
+      "nodeId": "office_54",
+      "name": "Office 54 — 9.18m²",
+      "type": "office",
+      "icon": "🏢",
+      "description": "Office 54 — 9.18m²"
+    },
+    {
+      "id": "poi-office_53",
+      "nodeId": "office_53",
+      "name": "Office 53 — 9.30m²",
+      "type": "office",
+      "icon": "🏢",
+      "description": "Office 53 — 9.30m²"
+    },
+    {
+      "id": "poi-office_52",
+      "nodeId": "office_52",
+      "name": "Office 52 — 9.15m²",
+      "type": "office",
+      "icon": "🏢",
+      "description": "Office 52 — 9.15m²"
+    },
+    {
+      "id": "poi-office_51",
+      "nodeId": "office_51",
+      "name": "Office 51 — 9.23m²",
+      "type": "office",
+      "icon": "🏢",
+      "description": "Office 51 — 9.23m²"
+    },
+    {
+      "id": "poi-pantry",
+      "nodeId": "pantry",
+      "name": "Kitchen & Pantry Area",
+      "type": "facility",
+      "icon": "☕",
+      "description": "Kitchen & Pantry Area"
+    },
+    {
+      "id": "poi-c_lobby",
+      "nodeId": "c_lobby",
+      "name": "Main Lobby Area",
+      "type": "common",
+      "icon": "🚪",
+      "description": "Main Lobby Area"
+    },
+    {
+      "id": "poi-meeting_room",
+      "nodeId": "meeting_room",
+      "name": "Conference / Meeting Room",
+      "type": "meeting",
+      "icon": "📋",
+      "description": "Conference / Meeting Room"
+    },
+    {
+      "id": "poi-server_room",
+      "nodeId": "server_room",
+      "name": "IT Server Room",
+      "type": "facility",
+      "icon": "🖥️",
+      "description": "IT Server Room"
+    },
+    {
+      "id": "poi-restroom",
+      "nodeId": "restroom",
+      "name": "Restroom",
+      "type": "facility",
+      "icon": "🚻",
+      "description": "Restroom"
+    },
+    {
+      "id": "poi-entrance",
+      "nodeId": "entrance",
+      "name": "Main Entrance",
+      "type": "common",
+      "icon": "🚪",
+      "description": "Main Entrance"
+    }
+  ],
+  "scaleFactor": 10,
+  "createdAt": "2026-02-25T13:48:01.629Z",
+  "updatedAt": "2026-02-25T13:48:02.715Z"
 }

@@ -6,7 +6,7 @@ import { Floor, RouteStep } from "@/lib/types";
 import { useSettings } from "@/context/SettingsContext";
 import { t } from "@/lib/i18n";
 
-const MapView = dynamic(() => import("@/components/MapView"), { ssr: false });
+const GoogleMapView = dynamic(() => import("@/components/GoogleMapView"), { ssr: false });
 const CameraMapOverlay = dynamic(() => import("@/components/CameraMapOverlay"), { ssr: false });
 
 interface Props {
@@ -109,7 +109,7 @@ export default function DualModeView({
       {/* MAP view (phone pointing down / default) */}
       {mode === "map" && (
         <div className="w-full h-full">
-          <MapView
+          <GoogleMapView
             floor={floor}
             route={route}
             selectedPoi={selectedPoi}

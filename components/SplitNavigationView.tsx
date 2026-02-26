@@ -7,8 +7,10 @@ import { useSettings } from "@/context/SettingsContext";
 import { t } from "@/lib/i18n";
 import { speak, stopSpeaking } from "@/lib/tts";
 import { useIndoorPosition } from "@/lib/useIndoorPosition";
+import { localizeVPS } from "@/lib/vps";
+import ThreeARScene from "@/components/ThreeARScene";
 
-const MapView = dynamic(() => import("@/components/MapView"), { ssr: false });
+const GoogleMapView = dynamic(() => import("@/components/GoogleMapView"), { ssr: false });
 
 interface Props {
   floor: Floor;
@@ -48,20 +50,11 @@ export default function SplitNavigationView({
   const [cameraError, setCameraError] = useState("");
 
   // AR canvas
-  const arCanvasRef = useRef<HTMLCanvasElement>(null);
   const arContainerRef = useRef<HTMLDivElement>(null);
   const animFrameRef = useRef<number>(0);
 
-  // Pulse animation
-  const [pulse, setPulse] = useState(0);
-  useEffect(() => {
-    let frame = 0;
-    const interval = setInterval(() => {
-      frame++;
-      setPulse(frame);
-    }, 50);
-    return () => clearInterval(interval);
-  }, []);
+  // Heading diff for HTML HUD
+  const [headingDiff, setHeadingDiff] = useState<number | null>(null);
 
   const nodeMap = useMemo(
     () => new Map(floor.nodes.map((n) => [n.id, n])),
@@ -82,10 +75,14 @@ export default function SplitNavigationView({
 
   // Live indoor position tracking
   const [trackingActive, setTrackingActive] = useState(false);
+  const lastSpokenStepRef = useRef(-1);
+  const lastHeadingAlertRef = useRef(0);
+  const arrivedRef = useRef(false);
   const {
     position: livePosition,
     heading: liveHeading,
     routeHeading,
+    currentSegment,
     stepCount,
     distanceWalked,
     sensorsAvailable,
@@ -94,6 +91,7 @@ export default function SplitNavigationView({
     isOffRoute,
     recalibrateToNode,
     setManualPosition,
+    applyBeaconFix,
     currentStepLength,
   } = useIndoorPosition({
       routePoints,
@@ -103,10 +101,71 @@ export default function SplitNavigationView({
       },
       active: trackingActive,
       onRouteDeviation: (deviation) => {
-        // Could trigger voice alert: "You may be off route"
-        console.warn(`Route deviation: ${deviation.toFixed(1)}m`);
+        speak(t("nav.offRoute", language), language);
+        recalibrateToNode(Math.min(currentStep + 1, routePoints.length - 1));
       },
     });
+
+  // ── Distance to next turn point ──
+  const distanceToNextTurn = useMemo(() => {
+    // Sum remaining distance in current segment + look ahead
+    let remaining = 0;
+    for (let i = currentStep; i < routeSteps.length; i++) {
+      remaining += routeSteps[i].distance;
+      if (i > currentStep && routeSteps[i].direction !== "straight") break;
+    }
+    return Math.max(0, Math.round(remaining - (distanceWalked - segmentDistances.slice(0, currentStep).reduce((a, b) => a + b, 0))));
+  }, [currentStep, routeSteps, distanceWalked, segmentDistances]);
+
+  // ── LIVE VOICE ENGINE ──
+  // Speaks instructions as user walks, auto-advances
+  useEffect(() => {
+    if (!trackingActive) return;
+    if (currentStep === lastSpokenStepRef.current) return;
+
+    lastSpokenStepRef.current = currentStep;
+
+    const step = routeSteps[currentStep];
+    if (!step) return;
+
+    const text = step.text[language] || Object.values(step.text)[0] || "";
+    speak(text, language);
+
+    // Check if arrived at destination
+    if (step.direction === "arrive" && !arrivedRef.current) {
+      arrivedRef.current = true;
+    }
+  }, [currentStep, trackingActive, routeSteps, language]);
+
+  // ── HEADING COMPARISON — Wrong direction detection ──
+  useEffect(() => {
+    if (!trackingActive || liveHeading === null || routeHeading === null) return;
+
+    const now = Date.now();
+    // Only alert every 5 seconds to avoid spamming
+    if (now - lastHeadingAlertRef.current < 5000) return;
+
+    // Calculate heading difference (normalize to -180..180)
+    let diff = liveHeading - routeHeading;
+    while (diff > 180) diff -= 360;
+    while (diff < -180) diff += 360;
+
+    const absDiff = Math.abs(diff);
+
+    if (absDiff > 120) {
+      // Facing completely wrong direction
+      lastHeadingAlertRef.current = now;
+      speak(t("nav.turnAround", language), language);
+    } else if (absDiff > 60) {
+      // Facing somewhat wrong
+      lastHeadingAlertRef.current = now;
+      if (diff > 0) {
+        speak(t("nav.slightLeft", language), language);
+      } else {
+        speak(t("nav.slightRight", language), language);
+      }
+    }
+  }, [trackingActive, liveHeading, routeHeading, language]);
 
   // Remaining distance
   const remainingDistance = Math.max(0, Math.round(totalDistance - distanceWalked));
@@ -139,6 +198,18 @@ export default function SplitNavigationView({
       setCameraError("");
       setCameraState("active");
       setTrackingActive(true);
+      // Auto-start live navigation with voice when camera opens
+      if (!navActive.current) {
+        setIsNavigating(true);
+        navActive.current = true;
+        lastSpokenStepRef.current = -1;
+        arrivedRef.current = false;
+        if (routeSteps[0]) {
+          const text = routeSteps[0].text[language] || Object.values(routeSteps[0].text)[0] || "";
+          speak(text, language);
+          lastSpokenStepRef.current = 0;
+        }
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Camera access denied";
       if (!window.isSecureContext) {
@@ -148,7 +219,7 @@ export default function SplitNavigationView({
       }
       setCameraState("denied");
     }
-  }, []);
+  }, [routeSteps, language]);
 
   // Cleanup camera on unmount
   useEffect(() => {
@@ -158,319 +229,46 @@ export default function SplitNavigationView({
     };
   }, []);
 
-  // Draw AR overlay — Google Maps style live navigation on camera
+  // Draw AR overlay — Three.js 3D renderer handles this now
+  // Just compute heading difference for HTML HUD warnings
   useEffect(() => {
-    if (cameraState !== "active") return;
-
-    const canvas = arCanvasRef.current;
-    const container = arContainerRef.current;
-    if (!canvas || !container) return;
-
-    function draw() {
-      if (!canvas || !container) return;
-      const rect = container.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
-      canvas.style.width = rect.width + "px";
-      canvas.style.height = rect.height + "px";
-
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-      ctx.scale(dpr, dpr);
-
-      const W = rect.width;
-      const H = rect.height;
-      ctx.clearRect(0, 0, W, H);
-
-      // Progress ratio (how far along the route)
-      const progress = totalDistance > 0 ? Math.min(distanceWalked / totalDistance, 1) : 0;
-
-      // ─── Blue AR dots on floor (perspective path) ───
-      // Dots "scroll forward" as you walk — offset based on distance walked
-      const dotCount = 14;
-      const dotBaseRadius = 7;
-      const pathCenterX = W / 2;
-      const dotScrollOffset = (distanceWalked * 30) % 40; // scroll animation based on real walking
-
-      for (let i = 0; i < dotCount; i++) {
-        const rawProgress = i / (dotCount - 1);
-        const adjustedY = H * 0.95 - rawProgress * H * 0.55 - dotScrollOffset * rawProgress;
-        const y = Math.max(H * 0.15, Math.min(H * 0.95, adjustedY));
-
-        const perspectiveShift = currentDirection === "left"
-          ? -rawProgress * W * 0.3
-          : currentDirection === "right"
-            ? rawProgress * W * 0.3
-            : 0;
-        const x = pathCenterX + perspectiveShift;
-
-        const scale = 1 - rawProgress * 0.65;
-        const radius = dotBaseRadius * scale;
-        const waveOffset = (pulse * 0.1 + i * 0.4) % (Math.PI * 2);
-        const alpha = 0.5 + Math.sin(waveOffset) * 0.25;
-
-        // Floor glow (ellipse shadow below dot)
-        ctx.save();
-        ctx.globalAlpha = alpha * 0.25;
-        ctx.fillStyle = "#4285F4";
-        ctx.beginPath();
-        ctx.ellipse(x, y + radius * 0.5, radius * 2.5, radius * 0.8, 0, 0, Math.PI * 2);
-        ctx.fill();
-        // Bright dot
-        ctx.globalAlpha = alpha;
-        ctx.fillStyle = "#4285F4";
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI * 2);
-        ctx.fill();
-        // White center highlight
-        ctx.globalAlpha = alpha + 0.15;
-        ctx.fillStyle = "#a8cdff";
-        ctx.beginPath();
-        ctx.arc(x, y - radius * 0.2, radius * 0.4, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
-
-      // ─── Large directional arrow ───
-      const arrowCenterX = W / 2 + (currentDirection === "left" ? -W * 0.18 : currentDirection === "right" ? W * 0.18 : 0);
-      const arrowCenterY = H * 0.28;
-      const arrowSize = Math.min(W, H) * 0.17;
-      const pulseScale = 1 + Math.sin(pulse * 0.1) * 0.04;
-
-      ctx.save();
-      ctx.translate(arrowCenterX, arrowCenterY);
-      ctx.scale(pulseScale, pulseScale);
-
-      let rotation = 0;
-      if (currentDirection === "left") rotation = -Math.PI / 2;
-      if (currentDirection === "right") rotation = Math.PI / 2;
-      ctx.rotate(rotation);
-
-      if (currentDirection === "arrive") {
-        ctx.globalAlpha = 0.3;
-        ctx.fillStyle = "#34A853";
-        ctx.beginPath();
-        ctx.arc(0, 0, arrowSize * 0.9, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 0.95;
-        ctx.fillStyle = "#34A853";
-        ctx.strokeStyle = "#fff";
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.arc(0, 0, arrowSize * 0.6, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-        ctx.strokeStyle = "#fff";
-        ctx.lineWidth = 6;
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
-        ctx.beginPath();
-        const cs = arrowSize * 0.3;
-        ctx.moveTo(-cs, 0);
-        ctx.lineTo(-cs * 0.3, cs * 0.7);
-        ctx.lineTo(cs, -cs * 0.5);
-        ctx.stroke();
-      } else if (currentDirection === "start") {
-        ctx.globalAlpha = 0.2;
-        ctx.fillStyle = "#4285F4";
-        ctx.beginPath();
-        ctx.arc(0, 0, arrowSize * 0.8, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = "#4285F4";
-        ctx.strokeStyle = "#fff";
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.arc(0, 0, arrowSize * 0.5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = "#fff";
-        ctx.font = `${arrowSize * 0.5}px sans-serif`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("🚶", 0, 2);
-      } else {
-        // Shadow
-        ctx.globalAlpha = 0.2;
-        ctx.fillStyle = "#000";
-        ctx.beginPath();
-        ctx.ellipse(0, arrowSize * 0.55, arrowSize * 0.6, arrowSize * 0.15, 0, 0, Math.PI * 2);
-        ctx.fill();
-        // Glow
-        ctx.globalAlpha = 0.15;
-        ctx.fillStyle = "#4285F4";
-        ctx.beginPath();
-        ctx.arc(0, 0, arrowSize * 1.2, 0, Math.PI * 2);
-        ctx.fill();
-        // Circle
-        ctx.globalAlpha = 0.95;
-        const arrowGrad = ctx.createRadialGradient(0, -arrowSize * 0.2, 0, 0, 0, arrowSize * 0.8);
-        arrowGrad.addColorStop(0, "#5c9cff");
-        arrowGrad.addColorStop(1, "#2a6dd9");
-        ctx.fillStyle = arrowGrad;
-        ctx.strokeStyle = "rgba(255,255,255,0.6)";
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.arc(0, 0, arrowSize * 0.8, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-        // Arrow shape
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = "#ffffff";
-        ctx.shadowColor = "rgba(0,0,0,0.3)";
-        ctx.shadowBlur = 4;
-        ctx.beginPath();
-        const aw = arrowSize * 0.4;
-        const ah = arrowSize * 0.55;
-        ctx.moveTo(0, -ah);
-        ctx.lineTo(-aw, ah * 0.1);
-        ctx.lineTo(-aw * 0.35, ah * 0.1);
-        ctx.lineTo(-aw * 0.35, ah);
-        ctx.lineTo(aw * 0.35, ah);
-        ctx.lineTo(aw * 0.35, ah * 0.1);
-        ctx.lineTo(aw, ah * 0.1);
-        ctx.closePath();
-        ctx.fill();
-        ctx.shadowBlur = 0;
-      }
-
-      ctx.restore();
-
-      // ─── Floating "Go to [Destination]" label ───
-      ctx.save();
-      const labelY = H * 0.12;
-      const labelText = `Go ${destinationName}`;
-      ctx.font = "bold 17px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-      const labelW = ctx.measureText(labelText).width;
-      const pillW = labelW + 32;
-      const pillH = 38;
-      const pillX = W / 2 - pillW / 2;
-      ctx.fillStyle = "rgba(66, 133, 244, 0.88)";
-      ctx.beginPath();
-      ctx.roundRect(pillX, labelY - pillH / 2, pillW, pillH, 19);
-      ctx.fill();
-      ctx.strokeStyle = "rgba(255,255,255,0.35)";
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-      ctx.fillStyle = "#ffffff";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(labelText, W / 2, labelY);
-      ctx.restore();
-
-      // ─── LIVE DISTANCE BAR (Google Maps style — bottom of camera) ───
-      ctx.save();
-      const barY = H * 0.82;
-      const barW = W * 0.85;
-      const barH = 56;
-      const barX = (W - barW) / 2;
-
-      // Background
-      ctx.fillStyle = "rgba(0,0,0,0.75)";
-      ctx.beginPath();
-      ctx.roundRect(barX, barY, barW, barH, 16);
-      ctx.fill();
-
-      // Progress bar track
-      const trackX = barX + 14;
-      const trackY = barY + barH - 14;
-      const trackW = barW - 28;
-      const trackH = 5;
-      ctx.fillStyle = "rgba(255,255,255,0.2)";
-      ctx.beginPath();
-      ctx.roundRect(trackX, trackY, trackW, trackH, 3);
-      ctx.fill();
-
-      // Progress bar fill (blue)
-      const fillW = trackW * progress;
-      if (fillW > 0) {
-        const progGrad = ctx.createLinearGradient(trackX, 0, trackX + fillW, 0);
-        progGrad.addColorStop(0, "#4285F4");
-        progGrad.addColorStop(1, "#34A853");
-        ctx.fillStyle = progGrad;
-        ctx.beginPath();
-        ctx.roundRect(trackX, trackY, Math.max(fillW, 6), trackH, 3);
-        ctx.fill();
-
-        // Glowing dot at tip
-        ctx.fillStyle = "#34A853";
-        ctx.beginPath();
-        ctx.arc(trackX + fillW, trackY + trackH / 2, 5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = "#fff";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-      }
-
-      // Left side — walked distance
-      ctx.fillStyle = "#4285F4";
-      ctx.font = "bold 18px -apple-system, BlinkMacSystemFont, sans-serif";
-      ctx.textAlign = "left";
-      ctx.textBaseline = "top";
-      ctx.fillText(`${Math.round(distanceWalked)}m`, barX + 14, barY + 8);
-
-      // "walked" label
-      ctx.fillStyle = "rgba(255,255,255,0.5)";
-      ctx.font = "10px -apple-system, sans-serif";
-      ctx.fillText("walked", barX + 14 + ctx.measureText(`${Math.round(distanceWalked)}m`).width + 4, barY + 14);
-
-      // Right side — remaining
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 18px -apple-system, BlinkMacSystemFont, sans-serif";
-      ctx.textAlign = "right";
-      ctx.fillText(`${remainingDistance}m`, barX + barW - 14, barY + 8);
-
-      // "left" label
-      ctx.fillStyle = "rgba(255,255,255,0.5)";
-      ctx.font = "10px -apple-system, sans-serif";
-      const remTextW = ctx.measureText(`${remainingDistance}m`).width;
-      ctx.textAlign = "right";
-      ctx.fillText("left", barX + barW - 14 - remTextW - 4, barY + 14);
-
-      // Center — step count
-      ctx.fillStyle = "rgba(255,255,255,0.7)";
-      ctx.font = "12px -apple-system, sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText(`👣 ${stepCount} steps`, W / 2, barY + 12);
-
-      ctx.restore();
-
-      animFrameRef.current = requestAnimationFrame(draw);
+    if (liveHeading === null || routeHeading === null) {
+      setHeadingDiff(null);
+      return;
     }
+    let diff = liveHeading - routeHeading;
+    while (diff > 180) diff -= 360;
+    while (diff < -180) diff += 360;
+    setHeadingDiff(diff);
+  }, [liveHeading, routeHeading]);
 
-    animFrameRef.current = requestAnimationFrame(draw);
-    return () => {
-      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-    };
-  }, [cameraState, currentDirection, routeSteps, currentStep, pulse, destinationName, distanceWalked, remainingDistance, stepCount, totalDistance]);
+  // Computed values for the 3D scene
+  const metersPerPx = 1 / (floor.scaleFactor ?? 10);
 
-  // Voice navigation
-  const startVoiceNav = async () => {
+  // ── Live voice navigation (starts tracking + voice together) ──
+  const startLiveNav = useCallback(() => {
     setIsNavigating(true);
     setTrackingActive(true);
     navActive.current = true;
-    for (let i = 0; i < routeSteps.length; i++) {
-      if (!navActive.current) break;
-      setCurrentStep(i);
-      const text =
-        routeSteps[i].text[language] ||
-        Object.values(routeSteps[i].text)[0] ||
-        "";
-      await speak(text, language);
-      if (!navActive.current) break;
-      await new Promise((r) => setTimeout(r, 400));
+    lastSpokenStepRef.current = -1;
+    arrivedRef.current = false;
+    // Speak the first instruction immediately
+    if (routeSteps[0]) {
+      const text = routeSteps[0].text[language] || Object.values(routeSteps[0].text)[0] || "";
+      speak(text, language);
+      lastSpokenStepRef.current = 0;
     }
-    setIsNavigating(false);
-    navActive.current = false;
-  };
+  }, [routeSteps, language]);
 
-  const stopVoiceNav = () => {
+  const stopLiveNav = useCallback(() => {
     navActive.current = false;
     stopSpeaking();
     setIsNavigating(false);
+    setTrackingActive(false);
     setCurrentStep(0);
-  };
+    lastSpokenStepRef.current = -1;
+    arrivedRef.current = false;
+  }, []);
 
   const dirIcon: Record<string, string> = {
     start: "📍",
@@ -530,7 +328,6 @@ export default function SplitNavigationView({
               direction={currentDirection}
               step={routeSteps[currentStep]}
               language={language}
-              pulse={pulse}
               destinationName={destinationName}
             />
             {cameraError && (
@@ -562,10 +359,94 @@ export default function SplitNavigationView({
 
         {/* AR overlay canvas */}
         {cameraState === "active" && (
-          <canvas
-            ref={arCanvasRef}
-            className="absolute inset-0 w-full h-full z-10"
-          />
+          <>
+            {/* Three.js 3D renderer — renders into arContainerRef */}
+            <ThreeARScene
+              containerRef={arContainerRef}
+              routePoints={routePoints}
+              currentStep={currentStep}
+              metersPerPx={metersPerPx}
+              heading={liveHeading}
+              routeHeading={routeHeading}
+              destinationName={destinationName}
+              visible={cameraState === "active"}
+              distanceWalked={distanceWalked}
+              remainingDistance={remainingDistance}
+              stepCount={stepCount}
+              totalDistance={totalDistance}
+              currentDirection={currentDirection}
+              distanceToNextTurn={distanceToNextTurn}
+            />
+
+            {/* ─── HTML HUD Overlays (over 3D scene) ─── */}
+
+            {/* Destination label (top) */}
+            <div className="absolute top-[3%] left-0 right-0 z-20 flex justify-center pointer-events-none">
+              <div className="bg-[#4285F4]/92 backdrop-blur-sm px-6 py-2 rounded-full border border-white/30 shadow-lg shadow-blue-500/20">
+                <span className="text-white font-bold text-sm">
+                  → {destinationName}
+                </span>
+              </div>
+            </div>
+
+            {/* Wrong direction warning */}
+            {headingDiff !== null && Math.abs(headingDiff) > 120 && (
+              <div className="absolute top-[11%] left-[8%] right-[8%] z-20 pointer-events-none">
+                <div className="bg-red-600/92 backdrop-blur-md rounded-2xl px-4 py-3 text-center shadow-lg">
+                  <span className="text-white font-bold text-[15px]">
+                    ⚠ Turn Around — Wrong Direction!
+                  </span>
+                </div>
+              </div>
+            )}
+            {headingDiff !== null && Math.abs(headingDiff) > 60 && Math.abs(headingDiff) <= 120 && (
+              <div className="absolute top-[11%] left-[15%] right-[15%] z-20 pointer-events-none">
+                <div className="bg-yellow-500/90 backdrop-blur-md rounded-xl px-4 py-2.5 text-center shadow-lg">
+                  <span className="text-black font-bold text-[13px]">
+                    {headingDiff > 0 ? "↰ Turn Left to get on route" : "↱ Turn Right to get on route"}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Next turn indicator */}
+            {currentStep < routeSteps.length - 1 && routeSteps[currentStep + 1] && routeSteps[currentStep + 1].direction !== "straight" && (
+              <div className="absolute top-[70%] left-0 right-0 z-20 flex justify-center pointer-events-none">
+                <div className="bg-black/70 backdrop-blur-md rounded-xl px-5 py-2 shadow-lg border border-white/10">
+                  <span className="text-white font-bold text-[13px]">
+                    {routeSteps[currentStep + 1].direction === "left" ? "↰" : routeSteps[currentStep + 1].direction === "right" ? "↱" : routeSteps[currentStep + 1].direction === "arrive" ? "🏁" : "⬆"}{" "}
+                    In ~{distanceToNextTurn}m
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Distance progress bar */}
+            <div className="absolute top-[80%] left-[4%] right-[4%] z-20 pointer-events-none">
+              <div className="bg-black/78 backdrop-blur-md rounded-2xl px-4 py-3 shadow-xl">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <span className="text-[#4285F4] font-bold text-base">{Math.round(distanceWalked)}m</span>
+                    <span className="text-white/50 text-[9px] ml-1">walked</span>
+                  </div>
+                  <span className="text-white/50 text-[9px]">👣 {stepCount}</span>
+                  <div>
+                    <span className="text-white font-bold text-base">{remainingDistance}m</span>
+                    <span className="text-white/50 text-[9px] ml-1">left</span>
+                  </div>
+                </div>
+                <div className="w-full h-1 bg-white/15 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-300"
+                    style={{
+                      width: `${totalDistance > 0 ? Math.min((distanceWalked / totalDistance) * 100, 100) : 0}%`,
+                      background: "linear-gradient(to right, #4285F4, #34A853)",
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </>
         )}
 
         {/* Live tracking badge — Google Maps style + confidence */}
@@ -624,6 +505,8 @@ export default function SplitNavigationView({
         >
           ←
         </button>
+        {/* Dubai Police Logo */}
+        <img src="/dubai-police-logo.png" alt="" className="w-8 h-8 rounded-md object-contain bg-white/90" />
         <div className="flex-1 min-w-0">
           <p className="text-[10px] text-gray-300 uppercase tracking-wide">
             {t("nav.navigatingTo", language)}
@@ -661,7 +544,7 @@ export default function SplitNavigationView({
       {showMiniMap && (
         <div className="relative z-30 mx-3 mb-2">
           <div className="w-36 h-28 rounded-2xl overflow-hidden border-2 border-white/30 shadow-2xl shadow-black/50 relative">
-            <MapView
+            <GoogleMapView
               floor={floor}
               route={route}
               selectedPoi={route[route.length - 1]}
@@ -669,6 +552,7 @@ export default function SplitNavigationView({
               livePosition={trackingActive ? livePosition : null}
               liveHeading={liveHeading}
               confidence={confidence}
+              autoFollow={trackingActive}
             />
             {/* Tap to expand hint */}
             <button
@@ -691,15 +575,25 @@ export default function SplitNavigationView({
         </button>
       )}
 
-      {/* ═══ Recalibrate button (floating above bottom bar) ═══ */}
-      {trackingActive && confidence < 0.5 && (
-        <div className="relative z-30 mx-3 mb-2 flex justify-center">
-          <button
-            onClick={() => recalibrateToNode(currentStep)}
-            className="bg-yellow-500/90 text-black px-5 py-2 rounded-full text-xs font-bold flex items-center gap-2 shadow-lg shadow-yellow-500/30"
-          >
-            📍 Recalibrate Position
-          </button>
+      {/* ═══ VPS Localize + Recalibrate buttons ═══ */}
+      {trackingActive && (
+        <div className="relative z-30 mx-3 mb-2 flex justify-center gap-2">
+          {cameraState === "active" && (
+            <VPSLocalizeButton
+              videoRef={videoRef}
+              applyBeaconFix={applyBeaconFix}
+              floorWidth={floor.width}
+              floorHeight={floor.height}
+            />
+          )}
+          {confidence < 0.5 && (
+            <button
+              onClick={() => recalibrateToNode(currentStep)}
+              className="bg-yellow-500/90 text-black px-5 py-2 rounded-full text-xs font-bold flex items-center gap-2 shadow-lg shadow-yellow-500/30"
+            >
+              📍 Recalibrate
+            </button>
+          )}
         </div>
       )}
 
@@ -711,10 +605,17 @@ export default function SplitNavigationView({
             <span className="text-2xl flex-shrink-0">
               {dirIcon[routeSteps[currentStep].direction] || "📍"}
             </span>
-            <p className="text-sm flex-1 leading-snug font-medium">
-              {routeSteps[currentStep].text[language] ||
-                Object.values(routeSteps[currentStep].text)[0]}
-            </p>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm leading-snug font-medium">
+                {routeSteps[currentStep].text[language] ||
+                  Object.values(routeSteps[currentStep].text)[0]}
+              </p>
+              {trackingActive && currentStep < routeSteps.length - 1 && distanceToNextTurn > 0 && (
+                <p className="text-[10px] text-blue-300 mt-0.5">
+                  Next turn in ~{distanceToNextTurn}m
+                </p>
+              )}
+            </div>
             <span className="text-xs text-[#c5a44e] font-bold flex-shrink-0 bg-white/10 px-2.5 py-1 rounded-lg">
               {currentStep + 1}/{routeSteps.length}
             </span>
@@ -729,14 +630,14 @@ export default function SplitNavigationView({
           </div>
           {!isNavigating ? (
             <button
-              onClick={startVoiceNav}
+              onClick={startLiveNav}
               className="bg-[#4285F4] text-white px-5 py-3 rounded-xl font-bold text-sm hover:bg-[#3b78e7] transition-colors shadow-lg shadow-blue-500/30"
             >
               🔊 {t("map.startNav", language)}
             </button>
           ) : (
             <button
-              onClick={stopVoiceNav}
+              onClick={stopLiveNav}
               className="bg-red-600 text-white px-5 py-3 rounded-xl font-bold text-sm hover:bg-red-700 transition-colors"
             >
               ⏹ Stop
@@ -748,22 +649,95 @@ export default function SplitNavigationView({
   );
 }
 
+/** VPS Localize Button — captures camera frame and localizes via Immersal */
+function VPSLocalizeButton({
+  videoRef,
+  applyBeaconFix,
+  floorWidth,
+  floorHeight,
+}: {
+  videoRef: React.RefObject<HTMLVideoElement | null>;
+  applyBeaconFix: (pos: { x: number; y: number }, accuracy: number) => void;
+  floorWidth: number;
+  floorHeight: number;
+}) {
+  const [vpsState, setVpsState] = useState<"idle" | "scanning" | "success" | "fail">("idle");
+
+  const handleLocalize = useCallback(async () => {
+    if (!videoRef.current) return;
+    setVpsState("scanning");
+
+    try {
+      const result = await localizeVPS(videoRef.current, {
+        offsetX: floorWidth / 2,
+        offsetY: floorHeight / 2,
+      });
+
+      if (result.success) {
+        applyBeaconFix({ x: result.x, y: result.y }, result.accuracy);
+        setVpsState("success");
+      } else {
+        setVpsState("fail");
+      }
+    } catch {
+      setVpsState("fail");
+    }
+
+    // Reset state after 3 seconds
+    setTimeout(() => setVpsState("idle"), 3000);
+  }, [videoRef, applyBeaconFix, floorWidth, floorHeight]);
+
+  return (
+    <button
+      onClick={handleLocalize}
+      disabled={vpsState === "scanning"}
+      className={`px-5 py-2 rounded-full text-xs font-bold flex items-center gap-2 shadow-lg transition-colors ${
+        vpsState === "scanning"
+          ? "bg-blue-400/70 text-white cursor-wait"
+          : vpsState === "success"
+          ? "bg-green-500/90 text-white"
+          : vpsState === "fail"
+          ? "bg-red-500/90 text-white"
+          : "bg-purple-500/90 text-white shadow-purple-500/30"
+      }`}
+    >
+      {vpsState === "scanning" && (
+        <>
+          <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          Scanning...
+        </>
+      )}
+      {vpsState === "success" && "✓ Position Fixed"}
+      {vpsState === "fail" && "✗ Try Again"}
+      {vpsState === "idle" && (
+        <>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <circle cx="12" cy="12" r="3" />
+            <line x1="12" y1="2" x2="12" y2="6" />
+            <line x1="12" y1="18" x2="12" y2="22" />
+            <line x1="2" y1="12" x2="6" y2="12" />
+            <line x1="18" y1="12" x2="22" y2="12" />
+          </svg>
+          VPS Localize
+        </>
+      )}
+    </button>
+  );
+}
+
 /** Static AR Arrow for when camera is denied */
 function ARArrowStatic({
   direction,
   step,
   language,
-  pulse,
   destinationName,
 }: {
   direction: string;
   step?: RouteStep;
   language: string;
-  pulse: number;
   destinationName: string;
 }) {
-  const scale = 1 + Math.sin(pulse * 0.12) * 0.06;
-
   let rotation = "0deg";
   if (direction === "left") rotation = "-90deg";
   if (direction === "right") rotation = "90deg";
@@ -788,11 +762,11 @@ function ARArrowStatic({
         {[0.3, 0.4, 0.5, 0.6, 0.7].map((opacity, i) => (
           <div
             key={i}
-            className="rounded-full bg-[#4285F4]"
+            className="rounded-full bg-[#4285F4] animate-pulse"
             style={{
               width: `${14 - i * 2}px`,
               height: `${14 - i * 2}px`,
-              opacity: opacity + Math.sin(pulse * 0.12 + i * 0.5) * 0.2,
+              opacity,
               boxShadow: `0 0 ${10 - i}px rgba(66, 133, 244, 0.5)`,
             }}
           />
@@ -801,8 +775,7 @@ function ARArrowStatic({
 
       {/* Big arrow circle */}
       <div
-        className="relative"
-        style={{ transform: `scale(${scale})`, transition: "transform 0.1s" }}
+        className="relative animate-pulse"
       >
         <div className="absolute inset-0 rounded-full bg-[#4285F4]/20 scale-[1.5]" />
         <div
